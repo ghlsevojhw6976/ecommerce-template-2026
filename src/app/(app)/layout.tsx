@@ -39,6 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = getServerSideURL()
   const ogImage = mediaUrl(company.ogImage)
   const iconUrl = mediaUrl(company.logoMark)
+  // The image optimizer rejects absolute url params (treated as remote and
+  // not in remotePatterns) — it needs the site-relative media path.
+  const iconPath = iconUrl?.startsWith(baseUrl) ? iconUrl.slice(baseUrl.length) : iconUrl
 
   return {
     metadataBase: new URL(baseUrl),
@@ -54,12 +57,29 @@ export async function generateMetadata(): Promise<Metadata> {
       ...(ogImage ? { images: [{ url: ogImage }] } : {}),
     },
     twitter: { card: 'summary_large_image' },
-    // The admin's logo mark doubles as the favicon; the bundled favicon.ico
-    // is only the fallback for a shop that has not uploaded one. Both links
-    // render (the .ico comes from the app/favicon.ico file convention) —
-    // declaring size + type here is what makes browsers prefer this one.
+    // The admin's logo mark IS the favicon. The stock icon lives in
+    // public/favicon.ico, which browsers only fetch implicitly when a page
+    // declares no <link rel="icon"> at all — so it is purely the fallback
+    // for a shop that has not uploaded a mark. It must NOT be an app/
+    // favicon.ico file: that convention injects its own 48x48 link tag
+    // alongside this one, and for a ~32px tab slot browsers pick the closer
+    // size — the stock icon beat the store logo on every tab. The 32px
+    // optimizer variant exists for the same reason (q=90: the only
+    // non-default quality next.config allows).
     ...(iconUrl
-      ? { icons: { icon: [{ url: iconUrl, sizes: '512x512', type: 'image/png' }] } }
+      ? {
+          icons: {
+            icon: [
+              {
+                url: `/_next/image?url=${encodeURIComponent(iconPath ?? '')}&w=32&q=90`,
+                sizes: '32x32',
+                type: 'image/png',
+              },
+              { url: iconUrl, sizes: '512x512', type: 'image/png' },
+            ],
+            apple: [{ url: iconUrl, sizes: '512x512', type: 'image/png' }],
+          },
+        }
       : {}),
   }
 }
