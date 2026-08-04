@@ -1,0 +1,138 @@
+.palette-preview {
+  margin-bottom: var(--base);
+
+  &__hint {
+    color: var(--theme-elevation-500);
+    font-size: 0.85rem;
+    margin: 0 0 calc(var(--base) / 2);
+    max-width: 46rem;
+  }
+
+  &__section {
+    border-top: 1px solid var(--theme-elevation-150);
+    margin-top: var(--base);
+    padding-top: calc(var(--base) / 2);
+
+    h4 {
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      margin: 0 0 calc(var(--base) / 2);
+      text-transform: uppercase;
+      color: var(--theme-elevation-500);
+    }
+  }
+
+  &__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(var(--base) / 2);
+  }
+
+  &__swatch {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 5.5rem;
+
+    span {
+      border: 1px solid var(--theme-elevation-200);
+      border-radius: 3px;
+      display: block;
+      height: 3rem;
+      width: 100%;
+    }
+
+    strong {
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    code {
+      color: var(--theme-elevation-500);
+      font-size: 0.7rem;
+    }
+  }
+
+  &__sample {
+    border: 1px solid;
+    border-radius: 4px;
+    padding: calc(var(--base) * 0.75);
+
+    p {
+      margin: 0 0 0.35rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  &__sample-title {
+    font-size: 1.15rem !important;
+    font-weight: 600;
+  }
+
+  &__sample-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: calc(var(--base) / 2);
+
+    span {
+      border-radius: 3px;
+      display: inline-block;
+      font-size: 0.8rem;
+      padding: 0.45rem 0.9rem;
+    }
+  }
+
+  &__checks {
+    list-style: none;
+    margin: calc(var(--base) / 2) 0 0;
+    padding: 0;
+
+    li {
+      align-items: center;
+      border-bottom: 1px solid var(--theme-elevation-100);
+      display: flex;
+      gap: 0.5rem;
+      padding: 0.4rem 0;
+    }
+  }
+
+  &__check-label {
+    flex: 1;
+    font-size: 0.85rem;
+  }
+
+  &__check-ratio {
+    color: var(--theme-elevation-700);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+
+    em {
+      color: var(--theme-elevation-450);
+      font-style: normal;
+    }
+  }
+
+  .tag {
+    border-radius: 3px;
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    padding: 0.1rem 0.35rem;
+    text-transform: uppercase;
+
+    &--ok {
+      background: var(--theme-success-100);
+      color: var(--theme-success-600);
+    }
+
+    &--fail {
+      background: var(--theme-error-100);
+      color: var(--theme-error-600);
+    }
+
+    &--info,
+    &--adj {
+      background: var(--theme-elevation-100);
+      color: var(--theme-elevation-600);
+    }
+  }
+}

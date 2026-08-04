@@ -1,0 +1,148 @@
+# ---------------------------------------------------------------
+# Dependencies
+# ---------------------------------------------------------------
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# ---------------------------------------------------------------
+# Next.js
+# ---------------------------------------------------------------
+# .next and every NEXT_DIST_DIR variant (.next-build, .next-e2e, .next-boot-test…)
+.next*/
+out/
+build/
+dist/
+*.tsbuildinfo
+next-env.d.ts
+
+# ---------------------------------------------------------------
+# Testing / coverage
+# ---------------------------------------------------------------
+coverage/
+.nyc_output/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# ---------------------------------------------------------------
+# Environment & secrets  — NEVER commit these
+# .env.example IS committed and is the source of truth for var names
+# ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.keystore
+
+# Google service account / Merchant API credentials
+service-account*.json
+gcp-credentials*.json
+google-*-key.json
+.gcloud/
+
+# Stripe CLI
+.stripe/
+
+# ---------------------------------------------------------------
+# Payload / CMS
+# ---------------------------------------------------------------
+/media/
+/public/media/
+.payload/
+
+# ---------------------------------------------------------------
+# Database
+# ---------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+/pgdata/
+/docker/volumes/
+
+# ---------------------------------------------------------------
+# Caches & tooling
+# ---------------------------------------------------------------
+.turbo/
+.vercel/
+.eslintcache
+.cache/
+.parcel-cache/
+.swc/
+.rollup.cache/
+
+# ---------------------------------------------------------------
+# Logs
+# ---------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+logs/
+
+# ---------------------------------------------------------------
+# Editor / OS
+# ---------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+
+# Keep shared VS Code config, ignore personal overrides
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# ---------------------------------------------------------------
+# Claude Code
+# CLAUDE.md and .claude/ ARE committed (shared team context).
+# Only per-developer local overrides are ignored.
+# ---------------------------------------------------------------
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+CLAUDE.local.md
+
+# ---------------------------------------------------------------
+# Scratch — local experiments that should never reach the repo
+# ---------------------------------------------------------------
+/scratch/
+/tmp/
+*.local.*
+
+# Playwright MCP scratch + local screenshots
+.playwright-mcp/
+/*.png
+/*.jpg
+/*.jpeg
+
+# One-off maintenance scripts (never commit)
+*.tmp.ts
+
+# Import source data and downloaded product media
+/imports/
+/public/media/
+/import-report.json
+
+# e2e build dir (see playwright.config.ts)
+/.next-e2e/
+
+# Database dumps and backups must never be committed by a sweep add —
+# the one deliberate exception is the sanitized demo seed.
+*.sql
+*.sql.gz
+*.dump
+*.bak
+!seed/database.sql.gz

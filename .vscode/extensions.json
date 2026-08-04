@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
+    "prisma.prisma",
+    "unifiedjs.vscode-mdx",
+    "mikestead.dotenv",
+    "yoavbls.pretty-ts-errors",
+    "usernamehw.errorlens",
+    "anthropic.claude-code"
+  ]
+}

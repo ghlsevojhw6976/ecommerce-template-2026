@@ -1,0 +1,78 @@
+{
+  // ---------------------------------------------------------------
+  // Window chrome — project accent color #00b4d8
+  // titleBar colors only apply when the title bar is VS Code-drawn,
+  // hence window.titleBarStyle: "custom".
+  // ---------------------------------------------------------------
+  "window.titleBarStyle": "custom",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#00b4d8",
+    "titleBar.activeForeground": "#00232c",
+    "titleBar.inactiveBackground": "#00b4d8cc",
+    "titleBar.inactiveForeground": "#00232c99",
+    "titleBar.border": "#0096b7",
+    "statusBar.background": "#0096b7",
+    "statusBar.foreground": "#ffffff",
+    "statusBar.noFolderBackground": "#0096b7",
+    "statusBar.debuggingBackground": "#0096b7",
+    "activityBar.activeBorder": "#00b4d8",
+    "commandCenter.border": "#00232c66"
+  },
+
+  // ---------------------------------------------------------------
+  // Editor
+  // ---------------------------------------------------------------
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "never"
+  },
+  "editor.tabSize": 2,
+  "editor.rulers": [100],
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+
+  // ---------------------------------------------------------------
+  // TypeScript — use the workspace SDK, not VS Code's bundled one
+  // ---------------------------------------------------------------
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // ---------------------------------------------------------------
+  // Tailwind CSS IntelliSense
+  // ---------------------------------------------------------------
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"],
+    ["cn\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
+  ],
+  "css.validate": false,
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+
+  // ---------------------------------------------------------------
+  // Search / explorer noise reduction
+  // ---------------------------------------------------------------
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/coverage": true,
+    "**/pnpm-lock.yaml": true,
+    "**/package-lock.json": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/.next/**": true
+  },
+  "files.associations": {
+    "*.css": "tailwindcss",
+    ".env.*": "dotenv"
+  }
+}

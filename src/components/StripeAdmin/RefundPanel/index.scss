@@ -1,0 +1,44 @@
+.stripe-refund {
+  margin-bottom: var(--base);
+
+  &__muted {
+    color: var(--theme-elevation-500);
+    font-size: 0.85rem;
+    margin: 0;
+  }
+
+  &__confirm {
+    border: 1px solid var(--theme-error-250);
+    border-radius: 4px;
+    padding: calc(var(--base) / 2);
+  }
+
+  &__choice {
+    align-items: center;
+    display: flex;
+    font-size: 0.9rem;
+    gap: 0.4rem;
+    margin-top: calc(var(--base) / 4);
+
+    input {
+      margin: 0;
+    }
+  }
+
+  &__amount {
+    background: var(--theme-input-bg);
+    border: 1px solid var(--theme-elevation-200);
+    border-radius: 3px;
+    color: var(--theme-elevation-800);
+    margin-top: calc(var(--base) / 3);
+    padding: 0.4rem 0.5rem;
+    width: 100%;
+    max-width: 18rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: calc(var(--base) / 3);
+    margin-top: calc(var(--base) / 2);
+  }
+}
