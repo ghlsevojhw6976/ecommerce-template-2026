@@ -10,6 +10,7 @@ export const CARRIERS = [
   { label: 'FedEx', value: 'fedex' },
   { label: 'DHL', value: 'dhl' },
   { label: 'DPD', value: 'dpd' },
+  { label: 'Deutsche Post', value: 'deutschepost' },
   { label: 'Other', value: 'other' },
 ] as const
 
@@ -35,6 +36,13 @@ export const trackingUrlFor = (
       // fetches, so this is verified against documented patterns, not a
       // crawl — customers clicking from their email are unaffected.)
       return `https://tracking.dpd.de/status/en_US/parcel/${number}`
+    case 'deutschepost':
+      // Deutsche Post's tracking page is client-rendered and blocks
+      // non-browser fetches (same situation as DPD above) — the piececode
+      // param is the standard deep-link format used across e-commerce
+      // integration guides (JTL, Pickware/Shopware), and confirmed live
+      // (200, not 404) with a browser user-agent.
+      return `https://www.deutschepost.de/de/s/sendungsverfolgung/verfolgen.html?piececode=${number}`
     default:
       return null
   }

@@ -106,7 +106,15 @@ export const applyEmailSettingsDoc = (doc: Record<string, any> | null | undefine
   const imap = doc?.imap
   const sameCreds = imap?.sameCredentials !== false
   const imapPass = sameCreds ? smtpPass : open(imap?.passwordEnc)
-  const imapHost = (sameCreds ? smtp?.host : imap?.host)?.trim()
+  // Host is independent of sameCredentials — that flag only governs
+  // username/password reuse. The IMAP host field falls back to the SMTP
+  // host ONLY when left blank (its own admin description), never gets
+  // overridden by an explicitly-set IMAP host just because sameCredentials
+  // is checked. Getting this wrong sends IMAP connections to the SMTP
+  // host on the IMAP port — TLS still shakes hands (same edge/cert), but
+  // the protocol read then resets, surfacing as a bare ECONNRESET with no
+  // hint it's a wrong-host problem.
+  const imapHost = (imap?.host?.trim() || smtp?.host)?.trim()
   const imapUser = (sameCreds ? smtp?.username : imap?.username)?.trim()
 
   if (imapHost && imapUser && imapPass) {

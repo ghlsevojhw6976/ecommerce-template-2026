@@ -284,7 +284,7 @@ export interface Order {
    * Saving a new value emails the customer their tracking link.
    */
   trackingNumber?: string | null;
-  carrier?: ('usps' | 'ups' | 'fedex' | 'dhl' | 'dpd' | 'other') | null;
+  carrier?: ('usps' | 'ups' | 'fedex' | 'dhl' | 'dpd' | 'deutschepost' | 'other') | null;
   /**
    * Stamped when a tracking number is first saved.
    */

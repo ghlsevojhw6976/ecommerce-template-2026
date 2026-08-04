@@ -49,6 +49,11 @@ gcp-credentials*.json
 google-*-key.json
 .gcloud/
 
+# ---------------------------------------------------------------
+# Deployment notes — VPS IP, SSH details, real env values
+# ---------------------------------------------------------------
+DEPLOYMENT.md
+
 # Stripe CLI
 .stripe/
 
