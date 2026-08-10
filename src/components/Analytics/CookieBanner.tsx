@@ -11,11 +11,11 @@ import { applyConsent, readConsent } from '@/lib/analytics/consent'
  * no modal, nothing blocked. Renders only while no choice is stored (the
  * cookie is read after mount, so returning visitors never see a flash).
  *
- * Accept upgrades Google Consent Mode to granted; Decline records the choice
- * and leaves the default denial standing — GA keeps receiving cookieless
- * pings either way, which is the entire point of Consent Mode. A decline
- * option isn't optional decoration: consent that cannot be refused isn't
- * consent, and EU enforcement treats accept-only banners as invalid.
+ * Tracking defaults to granted on load (opt-out model, owner decision) — the
+ * Accept click just confirms/persists that. Decline pulls Consent Mode down
+ * to denied and stops full measurement for that visitor going forward; GA
+ * keeps receiving cookieless pings either way, which is the entire point of
+ * Consent Mode.
  */
 export function CookieBanner() {
   const [visible, setVisible] = useState(false)

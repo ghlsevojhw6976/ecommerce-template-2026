@@ -54,7 +54,7 @@ export const AnalyticsSettings: GlobalConfig = {
       defaultValue: true,
       admin: {
         description:
-          'Shows a small consent bar and wires Google Consent Mode v2: analytics/ad storage stays DENIED until the visitor accepts (Google still receives cookieless pings and models the gap). Turn off only for markets where implied consent is acceptable — the banner never renders while the measurement ID is empty either way.',
+          'Shows a small consent bar and wires Google Consent Mode v2: analytics/ad storage default to GRANTED on load (tracking starts immediately), and a visitor who clicks Decline is pulled down to denied for that visit onward. The banner never renders while the measurement ID is empty either way.',
       },
     },
     {

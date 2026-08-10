@@ -16,12 +16,13 @@ import { CookieBanner } from './CookieBanner'
  * src/lib/analytics/gtag.ts at the funnel points.
  *
  * With the cookie banner enabled this also wires Google Consent Mode v2:
- * the consent DEFAULT (all four v2 signals denied) is declared in the same
- * inline script BEFORE gtag('config') — order inside one script is the only
- * ordering guarantee — then a returning visitor's stored choice is replayed
- * as a consent update. Until consent, Google receives cookieless pings and
- * models the gap; after Accept, full measurement. The banner itself only
- * renders while no choice is stored.
+ * the consent DEFAULT (all four v2 signals GRANTED — opt-out model, owner
+ * decision) is declared in the same inline script BEFORE gtag('config') —
+ * order inside one script is the only ordering guarantee — then a returning
+ * visitor's stored choice is replayed as a consent update. Tracking starts
+ * immediately on load; a visitor who clicks Decline is pulled down to denied
+ * (cookieless pings only) for that visit and every one after, until they
+ * change it. The banner itself only renders while no choice is stored.
  *
  * Rendered in the root layout, which is STATIC — the script (and the ID in
  * it) is baked into cached pages, which is why the Analytics global's
@@ -47,19 +48,19 @@ export const GoogleAnalytics: React.FC = async () => {
 
   const consentPreamble = consentManaged
     ? `gtag('consent', 'default', {
-  ad_storage: 'denied',
-  ad_user_data: 'denied',
-  ad_personalization: 'denied',
-  analytics_storage: 'denied',
+  ad_storage: 'granted',
+  ad_user_data: 'granted',
+  ad_personalization: 'granted',
+  analytics_storage: 'granted',
   wait_for_update: 500
 });
 var storedConsent = document.cookie.match(/(?:^|; )cookie_consent=(granted|denied)/);
-if (storedConsent && storedConsent[1] === 'granted') {
+if (storedConsent && storedConsent[1] === 'denied') {
   gtag('consent', 'update', {
-    ad_storage: 'granted',
-    ad_user_data: 'granted',
-    ad_personalization: 'granted',
-    analytics_storage: 'granted'
+    ad_storage: 'denied',
+    ad_user_data: 'denied',
+    ad_personalization: 'denied',
+    analytics_storage: 'denied'
   });
 }
 `
