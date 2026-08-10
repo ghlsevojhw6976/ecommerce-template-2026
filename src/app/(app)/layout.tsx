@@ -2,7 +2,10 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 import { AdminBar } from '@/components/AdminBar'
+import { ConsentBanner } from '@/components/Analytics/ConsentBanner'
+import { ConsentDefault } from '@/components/Analytics/ConsentDefault'
 import { GoogleAnalytics } from '@/components/Analytics/GoogleAnalytics'
+import { GoogleTagManagerHead, GoogleTagManagerNoScript } from '@/components/Analytics/GoogleTagManager'
 import { Footer } from '@/components/Footer'
 import { Header } from '@/components/Header'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
@@ -133,6 +136,12 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       suppressHydrationWarning
     >
       <head>
+        {/* Consent default must be the first script in <head> — GTM's
+            container script starts evaluating tags almost immediately, and
+            both it and GA4's gtag.js library need the consent state on the
+            dataLayer before they load, not after. */}
+        <ConsentDefault />
+        <GoogleTagManagerHead />
         <InitTheme />
         {/* Per-shop brand tokens. Renders after the stylesheet so it overrides
             the defaults in globals.css, and runs per request so a palette
@@ -153,7 +162,11 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           attributes only — descendants are still checked normally, so real
           mismatches are not hidden. */}
       <body suppressHydrationWarning>
+        {/* Google's own install instructions: immediately after the opening
+            <body> tag. */}
+        <GoogleTagManagerNoScript />
         <GoogleAnalytics />
+        <ConsentBanner />
         <Providers>
           <AdminBar />
           <LivePreviewListener />

@@ -1,10 +1,7 @@
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
 import Script from 'next/script'
 import React from 'react'
-import { cache } from 'react'
 
-import { CookieBanner } from './CookieBanner'
+import { getAnalyticsSettings, validGaId } from '@/lib/analytics/settings'
 
 /**
  * GA4 loader — renders nothing at all unless a measurement ID is configured
@@ -15,56 +12,20 @@ import { CookieBanner } from './CookieBanner'
  * page_views without custom code. E-commerce events come from
  * src/lib/analytics/gtag.ts at the funnel points.
  *
- * With the cookie banner enabled this also wires Google Consent Mode v2:
- * the consent DEFAULT (all four v2 signals GRANTED — opt-out model, owner
- * decision) is declared in the same inline script BEFORE gtag('config') —
- * order inside one script is the only ordering guarantee — then a returning
- * visitor's stored choice is replayed as a consent update. Tracking starts
- * immediately on load; a visitor who clicks Decline is pulled down to denied
- * (cookieless pings only) for that visit and every one after, until they
- * change it. The banner itself only renders while no choice is stored.
+ * Consent Mode v2 defaults are declared earlier, in <head>, by
+ * ConsentDefault — before this script and before GTM's, so both correctly
+ * inherit the default the moment they load. This component only loads the
+ * gtag.js library and fires 'js'/'config'.
  *
  * Rendered in the root layout, which is STATIC — the script (and the ID in
  * it) is baked into cached pages, which is why the Analytics global's
  * afterChange hook purges the whole cache.
  */
-
-const getAnalytics = cache(async () => {
-  try {
-    const payload = await getPayload({ config: configPromise })
-    return await payload.findGlobal({ slug: 'analytics', depth: 0 })
-  } catch {
-    return null
-  }
-})
-
 export const GoogleAnalytics: React.FC = async () => {
-  const settings = await getAnalytics()
-  const id = settings?.gaMeasurementId?.trim()
+  const settings = await getAnalyticsSettings()
+  const id = validGaId(settings?.gaMeasurementId)
 
-  if (!id || !/^G-[A-Z0-9]{4,}$/i.test(id)) return null
-
-  const consentManaged = settings?.cookieBannerEnabled !== false
-
-  const consentPreamble = consentManaged
-    ? `gtag('consent', 'default', {
-  ad_storage: 'granted',
-  ad_user_data: 'granted',
-  ad_personalization: 'granted',
-  analytics_storage: 'granted',
-  wait_for_update: 500
-});
-var storedConsent = document.cookie.match(/(?:^|; )cookie_consent=(granted|denied)/);
-if (storedConsent && storedConsent[1] === 'denied') {
-  gtag('consent', 'update', {
-    ad_storage: 'denied',
-    ad_user_data: 'denied',
-    ad_personalization: 'denied',
-    analytics_storage: 'denied'
-  });
-}
-`
-    : ''
+  if (!id) return null
 
   return (
     <>
@@ -75,10 +36,9 @@ if (storedConsent && storedConsent[1] === 'denied') {
       <Script id="ga4-init" strategy="afterInteractive">
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
-${consentPreamble}gtag('js', new Date());
+gtag('js', new Date());
 gtag('config', '${id}');`}
       </Script>
-      {consentManaged && <CookieBanner />}
     </>
   )
 }

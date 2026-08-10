@@ -27,7 +27,7 @@ export const AnalyticsSettings: GlobalConfig = {
   admin: {
     group: 'Settings',
     description:
-      'Google Analytics 4. Paste a measurement ID to enable tracking sitewide — leave empty to run without analytics.',
+      'Google Analytics 4 and/or Google Tag Manager. Paste an ID to enable tracking sitewide — leave both empty to run without analytics.',
   },
   hooks: {
     afterChange: [revalidateEverything],
@@ -48,13 +48,27 @@ export const AnalyticsSettings: GlobalConfig = {
       },
     },
     {
+      name: 'gtmContainerId',
+      label: 'GTM container ID',
+      type: 'text',
+      admin: {
+        description:
+          'Looks like GTM-XXXXXXX — Tag Manager → Admin → Container ID. Optional and independent of the GA4 field above; runs alongside it if both are set. Loads the container script in <head> and the noscript fallback at the top of <body>, exactly per Google\'s own install instructions. Empty disables it entirely.',
+      },
+      validate: (value: unknown) => {
+        if (!value) return true
+        if (typeof value === 'string' && /^GTM-[A-Z0-9]+$/i.test(value.trim())) return true
+        return 'A GTM container ID looks like GTM-XXXXXXX (not G-… — that is a GA4 measurement ID, the field above).'
+      },
+    },
+    {
       name: 'cookieBannerEnabled',
       label: 'Cookie consent banner',
       type: 'checkbox',
       defaultValue: true,
       admin: {
         description:
-          'Shows a small consent bar and wires Google Consent Mode v2: analytics/ad storage default to GRANTED on load (tracking starts immediately), and a visitor who clicks Decline is pulled down to denied for that visit onward. The banner never renders while the measurement ID is empty either way.',
+          'Shows a small consent bar and wires Google Consent Mode v2 for both GA4 and GTM: analytics/ad storage default to GRANTED on load (tracking starts immediately), and a visitor who clicks Decline is pulled down to denied for that visit onward. The banner never renders unless a GA4 or GTM ID is set.',
       },
     },
     {
