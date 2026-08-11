@@ -146,7 +146,13 @@ export const mapProduct = ({ product, market, serverUrl }: MapProductArgs): Mapp
   }
 
   if (additionalImageLinks.length) attrs.additionalImageLinks = additionalImageLinks
-  if (product.meta?.description) attrs.description = product.meta.description
+  // Same fallback chain as the page's own metadata (generateMeta.ts) — the
+  // feed must not diverge from what Google's crawler sees on the page
+  // itself. Without this, a fresh catalogue with zero hand-written SEO
+  // meta (the expected state, per the same file's contract) submits every
+  // product with NO description attribute at all.
+  const feedDescription = product.meta?.description || product.shortDescription || undefined
+  if (feedDescription) attrs.description = feedDescription
   if (product.brand) attrs.brand = product.brand
   if (product.gtin) attrs.gtins = [product.gtin]
   if (product.mpn) attrs.mpn = product.mpn

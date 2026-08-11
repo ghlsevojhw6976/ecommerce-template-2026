@@ -160,6 +160,26 @@ describe('mapProduct — payload shape', () => {
     expect('gtin' in result.input.productAttributes).toBe(false)
   })
 
+  it('falls back to shortDescription when meta.description is empty — same chain as the page itself (generateMeta.ts)', () => {
+    // A fresh catalogue with zero hand-written SEO meta must still submit a
+    // description, or the whole feed goes out with none — this pins the
+    // exact fallback so the page and the feed can't silently diverge again.
+    const withoutMeta = mapped({ shortDescription: 'A good short description.' } as Partial<Product>)
+    if (!withoutMeta.ok) throw new Error('expected mapping to succeed')
+    expect(withoutMeta.input.productAttributes.description).toBe('A good short description.')
+
+    const withMeta = mapped({
+      shortDescription: 'A good short description.',
+      meta: { description: 'Hand-written SEO description.' },
+    } as unknown as Partial<Product>)
+    if (!withMeta.ok) throw new Error('expected mapping to succeed')
+    expect(withMeta.input.productAttributes.description).toBe('Hand-written SEO description.')
+
+    const withNeither = mapped()
+    if (!withNeither.ok) throw new Error('expected mapping to succeed')
+    expect(withNeither.input.productAttributes.description).toBeUndefined()
+  })
+
   it('emits itemGroupId/color/size for sibling-family products, and omits them otherwise', () => {
     const sibling = mapped({
       itemGroupId: 'kitchenaid-ksm70',
