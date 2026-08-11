@@ -2696,7 +2696,7 @@ export interface StripeSetting {
   createdAt?: string | null;
 }
 /**
- * Google Analytics 4. Paste a measurement ID to enable tracking sitewide — leave empty to run without analytics.
+ * Google Analytics 4 and/or Google Tag Manager. Paste an ID to enable tracking sitewide — leave both empty to run without analytics.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "analytics".
@@ -2708,7 +2708,11 @@ export interface Analytics {
    */
   gaMeasurementId?: string | null;
   /**
-   * Shows a small consent bar and wires Google Consent Mode v2: analytics/ad storage stays DENIED until the visitor accepts (Google still receives cookieless pings and models the gap). Turn off only for markets where implied consent is acceptable — the banner never renders while the measurement ID is empty either way.
+   * Looks like GTM-XXXXXXX — Tag Manager → Admin → Container ID. Optional and independent of the GA4 field above; runs alongside it if both are set. Loads the container script in <head> and the noscript fallback at the top of <body>, exactly per Google's own install instructions. Empty disables it entirely.
+   */
+  gtmContainerId?: string | null;
+  /**
+   * Shows a small consent bar and wires Google Consent Mode v2 for both GA4 and GTM: analytics/ad storage default to GRANTED on load (tracking starts immediately), and a visitor who clicks Decline is pulled down to denied for that visit onward. The banner never renders unless a GA4 or GTM ID is set.
    */
   cookieBannerEnabled?: boolean | null;
   /**
@@ -2998,6 +3002,7 @@ export interface StripeSettingsSelect<T extends boolean = true> {
  */
 export interface AnalyticsSelect<T extends boolean = true> {
   gaMeasurementId?: T;
+  gtmContainerId?: T;
   cookieBannerEnabled?: T;
   notes?: T;
   updatedAt?: T;
