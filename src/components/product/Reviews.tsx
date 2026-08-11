@@ -80,12 +80,16 @@ export const Reviews: React.FC<{
       className="border-t border-border py-[var(--space-section)]"
     >
       <div className="container">
-        <div className="mb-[var(--space-block)] flex flex-wrap items-baseline justify-between gap-4">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="text-2xl md:text-3xl" id="reviews-heading">
             Reviews
           </h2>
           <Rating average={ratingAverage} count={ratingCount} />
         </div>
+        <p className="mb-[var(--space-block)] text-xs text-muted-foreground">
+          Reviews reflect customer experiences with this product, gathered across retail
+          channels.
+        </p>
 
         <ul className="grid gap-x-12 gap-y-10 md:grid-cols-2">
           {reviews.map((review) => {

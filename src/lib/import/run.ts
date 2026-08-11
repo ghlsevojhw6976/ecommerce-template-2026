@@ -346,8 +346,15 @@ export const runImport = async ({
                   rating: Math.round(rating),
                   title: source.title?.trim() || undefined,
                   body,
-                  authorName: source.author?.trim() || 'Verified buyer',
-                  verifiedPurchase: Boolean(source.is_verified),
+                  authorName: source.author?.trim() || 'Customer',
+                  // Never true for an import: `source.is_verified` verifies a
+                  // purchase on the ORIGIN marketplace, not on this store. The
+                  // "Verified" badge on the storefront (Reviews.tsx) reads as a
+                  // claim about a purchase made HERE — asserting it from a
+                  // different platform's data is a real, not cosmetic,
+                  // misrepresentation (FTC 16 CFR Part 465; also a Google
+                  // Merchant Center reviews-policy problem). See CLAUDE.md.
+                  verifiedPurchase: false,
                   helpfulCount: Number(source.helpful_count) || 0,
                   // Preserve the original date — re-dating imported reviews to
                   // the import day destroys the recency signal entirely.
