@@ -897,6 +897,7 @@ reasoning in `docs/decisions/`.
 | 2026-08-03 | **GA4 via admin-managed measurement ID** (Settings → Analytics), plain gtag.js, full e-commerce funnel incl. server-built purchase payload | No new dependency; ID is public so stored in clear; item_id = slug = GMC offerId for cross-tool joins; purchase deduped by order id in localStorage |
 | 2026-08-03 | **Cookie consent = Google Consent Mode v2**, bottom banner with Accept+Decline, admin toggle (default ON) | Consent Mode is the signal Google natively recognizes (EEA-mandatory for ads); defaults denied before gtag config; Decline included because accept-only banners are legally invalid consent |
 | 2026-08-10 | **Consent Mode default flipped to GRANTED** (opt-out): tracking starts on load, Decline pulls the visitor down to denied from then on | Owner decision, overriding the 2026-08-03 opt-in default; requested for immediate Realtime tracking without waiting on Accept clicks. ⚠️ Opt-out for non-essential analytics cookies is very likely non-compliant for EU/UK visitors (ePrivacy/GDPR require prior opt-in) — folded into the existing pre-launch legal review, not yet reviewed by counsel |
+| 2026-08-11 | **GMC misrepresentation audit — 15 products, 28 field fixes** (title/color/size/description contradictions) | Owner-reported: some titles named a different colour/quantity than the description. Root causes found in the original import CSV (`imports/hot_products_rewritten.csv`, gitignored): a stray `color`/`size` field populated on standalone (non-`itemGroupId`) products where the schema never intended it (leaks into the feed + PDP JSON-LD regardless — the mapper and `page.tsx` read it unconditionally); two products with cross-contaminated `size` values (identical corrupted string on two unrelated wine coolers); a handful with the wrong number restated in the title/description vs. the CSV's original (pre-rewrite) `title` column. Scripts kept for reuse on the next catalogue: `src/scripts/gmcMisrepresentationAudit.ts` (title/desc vs. color-word + capacity heuristics), `gmcMisrepresentationAuditV2.ts` (garbage-field + cross-contamination + container-quantity heuristics), `gmcApplyFixes.ts` (the applied fix list, exact-match guarded per field so a concurrent admin edit can't be clobbered). ⚠️ Running fixes via `payload.update()` in a standalone script does NOT purge the static cache (same `revalidatePath`-only-works-in-process gotcha as bulk seed scripts) — a rebuild + `pm2 restart` was required afterward to bake the corrected data into the prerendered pages. |
 | 2026-08-03 | **Google service-account key admin-managed** (write-only, sealed) in Settings → Merchant Center; feed-targeting/dry-run env vars retired; minimum .env = 4 vars | Owner decision; the env-only rule explicitly allowed this once given the Stripe treatment; markets/ID/dryRun already lived in settings |
 | 2026-08-03 | **Email = own mailbox via SMTP/IMAP** (Settings → Email, encrypted creds), no external email API; order confirmation + tracking emails hook orders; Mail inbox+reply inside the admin | Owner decision at ~20–30 emails/day; nodemailer MIT-0 + imapflow/mailparser/sanitize-html MIT; idempotency stamps; live IMAP reads, no mailbox mirror |
 | 2026-08-03 | **Mobile: stacked card anatomy + 2-up grids + chip category nav** — ProductGridItem stacks clamped title over price below `sm:` (side-by-side row kept above); /shop & /search go `grid-cols-2` on phones; shop sidebar becomes a scrollable chip strip below `lg` (children of the active branch as a 2nd row); cart drawer full-width on phones, 2-line title clamp. ⚠️ Never put `flex` on a `Price` — it drops the text space between charged and struck prices | Live audit at 390px: the title/price baseline row crushed titles into 8-line columns in every 2-up grid; 16 stacked sidebar links pushed the first product a viewport below the fold |
@@ -905,6 +906,18 @@ reasoning in `docs/decisions/`.
 
 ## 8. Scratch / open questions
 
+- [ ] **50 product titles are truncated mid-word** (found during the 2026-08-11
+      GMC audit, not yet fixed): the import pipeline hard-caps the base title
+      segment at exactly 70 characters before appending `– size – color –
+      category`, so a long product name gets cut off (e.g. "...Espresso
+      Machine with LatteGo Milk" — "Frother" dropped). Every original,
+      untruncated name is recoverable from the CSV's plain `title` column,
+      but naively re-appending it can reintroduce a redundant/conflicting
+      trailing colour mention some raw titles already carry (Amazon-style "...
+      - Black" suffix) — needs a per-product check, not a blind bulk
+      substitution, which is why it was left out of the 2026-08-11 fix pass.
+      This is a title-quality defect (incompleteness), not a misrepresentation
+      one (no false claim), so lower priority than the contradiction fixes.
 - [ ] Choose Postgres host (Neon / Supabase / self-host)
 - [ ] Confirm target countries, then check **CSS status per country** — in CSS
       program countries Shopping ads must run *through* a CSS; several
