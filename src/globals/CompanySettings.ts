@@ -329,6 +329,16 @@ export const CompanySettings: GlobalConfig = {
                   },
                 },
                 {
+                  name: 'flatShippingFee',
+                  type: 'number',
+                  min: 0,
+                  admin: {
+                    width: '50%',
+                    description:
+                      'In MINOR units (cents). Charged on orders below the free-shipping threshold. Blank/0 means free shipping always, regardless of the threshold above. Read by checkout, cart, announcement bar, trust row, product pages and the Merchant feed from one shared calculation (src/lib/commerce/shipping.ts) — never hardcode this number elsewhere.',
+                  },
+                },
+                {
                   name: 'processingTimeDays',
                   type: 'number',
                   defaultValue: 2,

@@ -2,6 +2,7 @@ import type { Payload } from 'payload'
 
 import type { Product } from '@/payload-types'
 import { gmcAnnotationWarnings } from '@/lib/commerce/discount'
+import type { ShippingPolicy } from '@/lib/commerce/shipping'
 import { mapProduct } from './mapProduct'
 import type { MerchantMarket, MerchantProductInput } from './types'
 
@@ -41,6 +42,8 @@ export type BuildFeedArgs = {
   serverUrl: string
   /** Cap for the admin preview. Omit for a full run. */
   limit?: number
+  /** Company.freeShippingThreshold / .flatShippingFee — passed through to mapProduct for the per-offer <g:shipping> element. */
+  shippingPolicy?: ShippingPolicy
 }
 
 export const buildFeed = async ({
@@ -48,6 +51,7 @@ export const buildFeed = async ({
   market,
   serverUrl,
   limit,
+  shippingPolicy,
 }: BuildFeedArgs): Promise<FeedReport> => {
   // Fetch everything rather than pre-filtering on feedEligible: the value of
   // this report is largely in telling the admin WHY products are missing from
@@ -66,7 +70,7 @@ export const buildFeed = async ({
   const warnings: { offerId: string; warnings: string[] }[] = []
 
   for (const doc of docs as Product[]) {
-    const result = mapProduct({ product: doc, market, serverUrl })
+    const result = mapProduct({ product: doc, market, serverUrl, shippingPolicy })
 
     if (result.ok) {
       inputs.push(result.input)

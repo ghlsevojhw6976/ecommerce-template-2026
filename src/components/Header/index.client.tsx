@@ -20,9 +20,19 @@ type Props = {
   logo: React.ReactNode
   categories: NavCategory[]
   storeName: string
+  /** Cents. Passed through to the cart drawer for its own shipping-cost line. */
+  freeShippingThreshold?: number | null
+  flatShippingFee?: number | null
 }
 
-export function HeaderClient({ header, logo, categories, storeName }: Props) {
+export function HeaderClient({
+  header,
+  logo,
+  categories,
+  storeName,
+  freeShippingThreshold,
+  flatShippingFee,
+}: Props) {
   const menu = header.navItems || []
   const pathname = usePathname()
 
@@ -75,7 +85,7 @@ export function HeaderClient({ header, logo, categories, storeName }: Props) {
               <SearchIcon size={18} strokeWidth={1.5} />
             </Link>
             <Suspense fallback={<OpenCartButton />}>
-              <Cart />
+              <Cart flatShippingFee={flatShippingFee} freeShippingThreshold={freeShippingThreshold} />
             </Suspense>
           </div>
         </div>

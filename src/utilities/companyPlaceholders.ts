@@ -73,6 +73,7 @@ export const buildPlaceholders = (company: Partial<Company>): PlaceholderMap => 
   'company.warrantyMonths': String(company.defaultWarrantyMonths ?? ''),
   'company.processingTime': plural(company.processingTimeDays ?? 2, 'business day'),
   'company.freeShippingThreshold': money(company.freeShippingThreshold),
+  'company.flatShippingFee': money(company.flatShippingFee),
   'company.returnsShippingPaidBy':
     company.returnsShippingPaidBy === 'customer' ? 'the customer' : companyName(company),
 

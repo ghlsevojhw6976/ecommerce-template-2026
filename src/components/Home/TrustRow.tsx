@@ -27,16 +27,21 @@ export const TrustRow: React.FC = async () => {
   const company = await getCompany()
 
   const threshold = company.freeShippingThreshold
+  const fee = company.flatShippingFee
   const returnDays = company.returnWindowDays ?? 30
   const processing = company.processingTimeDays ?? 2
+
+  const shippingTitle =
+    typeof threshold === 'number' && threshold > 0 && typeof fee === 'number' && fee > 0
+      ? `Free shipping over $${(threshold / 100).toFixed(0)} / $${(fee / 100).toFixed(0)} flat rate under $${(threshold / 100).toFixed(0)}`
+      : typeof threshold === 'number' && threshold > 0
+        ? `Free shipping over $${(threshold / 100).toFixed(0)}`
+        : 'Free shipping'
 
   const items = [
     {
       icon: Truck,
-      title:
-        typeof threshold === 'number' && threshold > 0
-          ? `Free shipping over $${(threshold / 100).toFixed(0)}`
-          : 'Free shipping',
+      title: shippingTitle,
       detail: `Dispatched in ${processing} business day${processing === 1 ? '' : 's'}`,
       href: '/shipping',
     },

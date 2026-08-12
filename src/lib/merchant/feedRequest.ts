@@ -47,10 +47,16 @@ export const authorizeAndBuildFeed = async (
     : { feedLabel: 'US', contentLanguage: 'en', currencyCode: 'USD' }
 
   const serverUrl = getServerSideURL()
-  const [report, company] = await Promise.all([
-    buildFeed({ payload, market, serverUrl }),
-    getCompany(),
-  ])
+  const company = await getCompany()
+  const report = await buildFeed({
+    payload,
+    market,
+    serverUrl,
+    shippingPolicy: {
+      freeShippingThreshold: company.freeShippingThreshold,
+      flatShippingFee: company.flatShippingFee,
+    },
+  })
 
   return {
     authorized: true,

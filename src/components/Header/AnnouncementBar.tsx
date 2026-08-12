@@ -18,14 +18,18 @@ export const AnnouncementBar: React.FC = async () => {
   const company = await getCompany()
 
   const threshold = company.freeShippingThreshold
+  const fee = company.flatShippingFee
   const returnDays = company.returnWindowDays
 
+  const shippingMessage =
+    typeof threshold === 'number' && threshold > 0 && typeof fee === 'number' && fee > 0
+      ? `Free shipping over $${(threshold / 100).toFixed(0)} · $${(fee / 100).toFixed(0)} flat rate under $${(threshold / 100).toFixed(0)}`
+      : typeof threshold === 'number' && threshold > 0
+        ? `Free shipping over $${(threshold / 100).toFixed(0)}`
+        : 'Free shipping on every order'
+
   const messages = [
-    typeof threshold === 'number' && threshold > 0
-      ? `Free shipping over $${(threshold / 100).toFixed(0)}`
-      : threshold === 0
-        ? 'Free shipping on every order'
-        : null,
+    shippingMessage,
     typeof returnDays === 'number' && returnDays > 0 ? `${returnDays}-day returns` : null,
   ].filter(Boolean) as string[]
 

@@ -10,6 +10,7 @@ import { TrackViewItem } from '@/components/Analytics/TrackViewItem'
 import { gaItem } from '@/lib/analytics/items'
 import { getAlternatives } from '@/lib/commerce/recommendations'
 import { getDiscount } from '@/lib/commerce/discount'
+import { shippingCostCents } from '@/lib/commerce/shipping'
 import { companyName, getCompany } from '@/utilities/getCompany'
 import { getServerSideURL } from '@/utilities/getURL'
 import { jsonLdScript } from '@/utilities/jsonLd'
@@ -256,8 +257,18 @@ export default async function ProductPage({ params }: Args) {
         : {}),
       shippingDetails: {
         '@type': 'OfferShippingDetails',
-        // Checkout charges $0 shipping always (DDP, duties included).
-        shippingRate: { '@type': 'MonetaryAmount', value: 0, currency: 'USD' },
+        // Priced against THIS item's own charged price, via the same
+        // lib/commerce/shipping.ts formula the visible page and checkout
+        // use — structured data must not claim $0 while the page next to it
+        // shows a real flat fee.
+        shippingRate: {
+          '@type': 'MonetaryAmount',
+          value: shippingCostCents(discount?.price ?? product.priceInUSD ?? 0, {
+            freeShippingThreshold: company.freeShippingThreshold,
+            flatShippingFee: company.flatShippingFee,
+          }) / 100,
+          currency: 'USD',
+        },
         shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'US' },
         ...(typeof company.processingTimeDays === 'number' &&
         typeof company.deliveryMaxDays === 'number'
@@ -393,6 +404,8 @@ export default async function ProductPage({ params }: Args) {
               product={product}
               reviewsEnabled={reviewsEnabled}
               shippingDisclaimer={<ShippingDisclaimer />}
+              freeShippingThreshold={company.freeShippingThreshold}
+              flatShippingFee={company.flatShippingFee}
             />
           </div>
         </div>

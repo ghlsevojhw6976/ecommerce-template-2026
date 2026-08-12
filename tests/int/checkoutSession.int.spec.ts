@@ -49,6 +49,7 @@ describe('buildSessionParams', () => {
     origin: ORIGIN,
     cartID: 42,
     itemsSnapshot: [{ product: 7, quantity: 1 }],
+    shippingAmount: 0,
   }
 
   it('targets the hosted page: no ui_mode, success_url with the session-id template, cancel_url back to review', () => {
@@ -71,9 +72,20 @@ describe('buildSessionParams', () => {
     const params = buildSessionParams(base)
     const rate = params.shipping_options?.[0]?.shipping_rate_data
     expect(rate?.fixed_amount?.amount).toBe(0)
+    expect(rate?.display_name).toBe('Free shipping')
     // Stripe types the slot as emptyable ('' | {message}) — narrow first.
     const shippingText = params.custom_text?.shipping_address
     expect(typeof shippingText === 'object' ? shippingText?.message : '').toMatch(/duties/i)
+  })
+
+  it('renders a nonzero shipping fee as its own explicit line, not silently folded into the item price', () => {
+    const params = buildSessionParams({ ...base, shippingAmount: 2000 })
+    const rate = params.shipping_options?.[0]?.shipping_rate_data
+    expect(rate?.fixed_amount?.amount).toBe(2000)
+    expect(rate?.display_name).toBe('Flat rate shipping')
+    // Line items themselves are untouched by the fee — it rides on
+    // shipping_options only, never inflates a product's unit_amount.
+    expect(params.line_items?.[0]?.price_data?.unit_amount).toBe(49999)
   })
 
   it('prefills the email only when known', () => {

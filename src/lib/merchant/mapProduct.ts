@@ -1,6 +1,7 @@
 import type { Media, Product } from '@/payload-types'
 import type { MappedProduct, MerchantMarket, MerchantProductInput } from './types'
 import { getDiscount } from '@/lib/commerce/discount'
+import { shippingCostCents, type ShippingPolicy } from '@/lib/commerce/shipping'
 
 /**
  * Payload Product -> Merchant API v1 ProductInput.
@@ -33,6 +34,8 @@ export type MapProductArgs = {
   product: Product
   market: MerchantMarket
   serverUrl: string
+  /** Company.freeShippingThreshold / .flatShippingFee, in cents. Omit to send no shipping element. */
+  shippingPolicy?: ShippingPolicy
 }
 
 /**
@@ -49,7 +52,12 @@ export const SKIP_REASONS = {
   noImage: 'no image — Merchant Center requires imageLink',
 } as const
 
-export const mapProduct = ({ product, market, serverUrl }: MapProductArgs): MappedProduct => {
+export const mapProduct = ({
+  product,
+  market,
+  serverUrl,
+  shippingPolicy,
+}: MapProductArgs): MappedProduct => {
   const offerId = product.slug || String(product.id)
   const skip = (reason: string): MappedProduct => ({ ok: false, offerId, reason })
 
@@ -142,6 +150,22 @@ export const mapProduct = ({ product, market, serverUrl }: MapProductArgs): Mapp
           : {}),
         endTime: new Date(discount.saleEndsAt).toISOString(),
       }
+    }
+  }
+
+  // --- Shipping ---------------------------------------------------------
+  // Per-offer, priced against THIS item's own charged price (post-discount)
+  // — the same formula and the same number checkout actually charges for a
+  // single-unit purchase. Google's account-level price-based shipping rules
+  // (Merchant Center → Shipping and returns) are the correct place for
+  // multi-item CART thresholds, since a per-item feed tag cannot see the
+  // rest of a customer's basket; this per-item value is the best offer-level
+  // approximation and keeps the feed self-consistent with the product page.
+  if (shippingPolicy) {
+    const shippingCost = shippingCostCents(product.priceInUSD, shippingPolicy)
+    attrs.shipping = {
+      country: market.feedLabel && market.feedLabel.length === 2 ? market.feedLabel : 'US',
+      price: { amountMicros: centsToMicros(shippingCost), currencyCode: market.currencyCode },
     }
   }
 

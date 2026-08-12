@@ -8,6 +8,7 @@ import React from 'react'
 
 import { CheckoutPage } from '@/components/checkout/CheckoutPage'
 import { ensureStripeCredentialsLoaded, resolveStripeSecretKey } from '@/lib/stripe/keys'
+import { getCompany } from '@/utilities/getCompany'
 
 // User-flow page: session/query-state driven, noindexed — prerendering it
 // has no value, and its client hooks (useSearchParams) forbid it anyway.
@@ -44,11 +45,16 @@ export default async function Checkout() {
     )
   }
 
+  const company = await getCompany()
+
   return (
     <div className="container min-h-[90vh] flex">
       <h1 className="sr-only">Checkout</h1>
 
-      <CheckoutPage />
+      <CheckoutPage
+        flatShippingFee={company.flatShippingFee}
+        freeShippingThreshold={company.freeShippingThreshold}
+      />
     </div>
   )
 }

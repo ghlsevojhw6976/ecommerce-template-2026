@@ -61,6 +61,8 @@ export function ProductDescription({
   familySelector,
   pooledRating,
   reviewsEnabled = true,
+  freeShippingThreshold,
+  flatShippingFee,
 }: {
   product: Product
   /** Server-rendered slot — the disclaimer reads Company settings, and this
@@ -77,6 +79,10 @@ export function ProductDescription({
       still falls through to the product's OWN rating below, which would
       silently defeat the toggle. */
   reviewsEnabled?: boolean
+  /** Cents, from Company settings — passed to Reassurance for its per-product
+      shipping-cost disclosure. */
+  freeShippingThreshold?: number | null
+  flatShippingFee?: number | null
 }) {
   const { currency } = useCurrency()
   // Every product owns exactly one price now — colour/size siblings are
@@ -187,7 +193,11 @@ export function ProductDescription({
 
       {/* ---- Reassurance ------------------------------------------------ */}
       <div className="mt-8">
-        <Reassurance product={product} />
+        <Reassurance
+          flatShippingFee={flatShippingFee}
+          freeShippingThreshold={freeShippingThreshold}
+          product={product}
+        />
       </div>
 
       {/* Cross-border delivery and customs, before the customer commits.

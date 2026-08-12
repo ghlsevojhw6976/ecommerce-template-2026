@@ -49,6 +49,8 @@ export type MerchantProductAttributes = {
   identifierExists?: boolean
   googleProductCategory?: string
   shippingLabel?: string
+  /** Free at/above Company.freeShippingThreshold, flat Company.flatShippingFee below it — same formula lib/commerce/shipping.ts charges at checkout. */
+  shipping?: { country: string; price: MerchantPrice }
   /** Shared across colour/size sibling products — how Google groups variants. */
   itemGroupId?: string
   color?: string

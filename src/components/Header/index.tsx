@@ -27,6 +27,8 @@ export async function Header() {
         header={header}
         logo={<BrandLogo />}
         storeName={companyName(company)}
+        freeShippingThreshold={company.freeShippingThreshold}
+        flatShippingFee={company.flatShippingFee}
       />
     </>
   )

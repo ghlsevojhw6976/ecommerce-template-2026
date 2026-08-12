@@ -45,10 +45,17 @@ export async function POST(): Promise<Response> {
         }
       : FALLBACK_MARKET
 
+    const company = await payload.findGlobal({ slug: 'company', depth: 0 })
+
     const report = await buildFeed({
       payload,
       market,
       serverUrl: getServerSideURL(),
+      shippingPolicy: {
+        freeShippingThreshold: (company as { freeShippingThreshold?: number | null })
+          .freeShippingThreshold,
+        flatShippingFee: (company as { flatShippingFee?: number | null }).flatShippingFee,
+      },
     })
 
     // Return counts and a single sample rather than the whole payload — a large

@@ -57,6 +57,7 @@ export const buildSessionParams = ({
   itemsSnapshot,
   customerEmail,
   cancelPath = '/checkout',
+  shippingAmount,
 }: {
   lineItems: Stripe.Checkout.SessionCreateParams.LineItem[]
   origin: string
@@ -70,6 +71,14 @@ export const buildSessionParams = ({
    * clicked would read as the shop losing their order.
    */
   cancelPath?: string
+  /**
+   * Integer cents, computed server-side by the caller from
+   * lib/commerce/shipping.ts against the trusted cart subtotal — never
+   * client input. 0 renders as "Free shipping"; anything else as a flat
+   * rate, both as an explicit line on Stripe's summary rather than an
+   * unexplained absence of one.
+   */
+  shippingAmount: number
 }): Stripe.Checkout.SessionCreateParams => {
   // Mirrors the metadata contract the PaymentIntent flow used, so
   // ensureOrderForPaymentIntent's rebuild path works unchanged. Oversized
@@ -95,15 +104,16 @@ export const buildSessionParams = ({
 
     ...(customerEmail ? { customer_email: customerEmail } : {}),
 
-    // The DDP promise, stated where the buyer decides. A $0 shipping option
-    // renders an explicit "Free shipping" line on Stripe's summary instead of
-    // an unexplained absence of one.
+    // Free at/above the threshold, a flat fee below it — computed by the
+    // caller from the SAME formula the cart drawer, checkout review page and
+    // product page quote, so what Stripe charges can never contradict what
+    // the customer was shown before reaching this page.
     shipping_options: [
       {
         shipping_rate_data: {
           type: 'fixed_amount',
-          fixed_amount: { amount: 0, currency: 'usd' },
-          display_name: 'Free shipping',
+          fixed_amount: { amount: shippingAmount, currency: 'usd' },
+          display_name: shippingAmount === 0 ? 'Free shipping' : 'Flat rate shipping',
         },
       },
     ],

@@ -12,10 +12,12 @@ import {
 } from '@/lib/stripe/checkoutSession'
 import { createBuyNowCart } from '@/lib/commerce/buyNowCart'
 import { revivePurchasedCart } from '@/lib/commerce/reviveCart'
+import { shippingCostCents } from '@/lib/commerce/shipping'
 import { validateProducts } from '@/lib/commerce/validateProducts'
 import { getStripe } from '@/lib/stripe/client'
 import { ensureStripeCredentialsLoaded } from '@/lib/stripe/keys'
 import { getServerSideURL } from '@/utilities/getURL'
+import { getCompany } from '@/utilities/getCompany'
 
 /**
  * Creates the hosted Checkout Session for a cart and returns the
@@ -203,6 +205,13 @@ export async function POST(request: Request): Promise<Response> {
     amount += unitPrice * quantity
   }
 
+  // ---- Shipping, from the trusted server-computed subtotal ---------------
+  // Same formula the cart drawer, checkout review page and product pages
+  // quote (lib/commerce/shipping.ts) — never re-derived here.
+  const company = await getCompany()
+  const shippingAmount = shippingCostCents(amount, company)
+  const totalAmount = amount + shippingAmount
+
   // ---- Reuse an open session instead of minting duplicates ---------------
   // A refresh or double-click lands here again; an unchanged cart gets its
   // existing session back, a changed one expires the stale session so the
@@ -230,7 +239,11 @@ export async function POST(request: Request): Promise<Response> {
       .catch(() => null)
 
     if (existing && existing.status === 'open') {
-      if (existing.amount_total === amount && existing.url) {
+      // amount_total is Stripe's own total INCLUDING the shipping option, so
+      // it must be compared against totalAmount, not the bare item subtotal —
+      // otherwise every session with a nonzero shipping fee looks "stale" and
+      // gets needlessly re-created on every page load.
+      if (existing.amount_total === totalAmount && existing.url) {
         return json({ url: existing.url, ...(replacedCart ? { replacedCart } : {}) })
       }
 
@@ -254,6 +267,7 @@ export async function POST(request: Request): Promise<Response> {
     itemsSnapshot: snapshot,
     customerEmail: user?.email,
     cancelPath,
+    shippingAmount,
   })
 
   let session
@@ -272,7 +286,11 @@ export async function POST(request: Request): Promise<Response> {
   await payload.create({
     collection: 'transactions',
     data: {
-      amount,
+      // The full charged total (subtotal + shipping), not the bare item
+      // subtotal — reconcile.ts and the single-transaction repair action
+      // both compare this directly against Stripe's real PaymentIntent
+      // amount, which itself includes the shipping line.
+      amount: totalAmount,
       currency: 'USD',
       cart: cart2.id,
       items: snapshot,

@@ -24,7 +24,7 @@ export const shippingPage = {
 
       h('h2', 'Cost'),
       p(
-        'Standard shipping is free on orders over **{{company.freeShippingThreshold}}**. Below that, the exact cost is calculated from the weight and destination of your basket and shown before you enter any payment details.',
+        'Standard shipping is free on orders of **{{company.freeShippingThreshold}}** or more. Below that, a flat **{{company.flatShippingFee}}** shipping fee applies — the same figure shown on the product page before you add anything to your cart, and again on the cart and checkout review pages before you pay. It never changes at the final payment step.',
       ),
       p(
         'Prices shown on the site exclude sales tax where applicable. Tax is calculated at checkout based on your delivery address, and shown before you pay.',

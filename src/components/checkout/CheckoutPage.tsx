@@ -13,6 +13,7 @@ import React, { useCallback, useState } from 'react'
 import { useCart } from '@payloadcms/plugin-ecommerce/client/react'
 import { gaItem, trackBeginCheckout } from '@/lib/analytics/gtag'
 import { totalSavingsCents } from '@/lib/commerce/discount'
+import { shippingCostCents, centsToFreeShipping } from '@/lib/commerce/shipping'
 import { Product, Variant } from '@/payload-types'
 
 import { DeleteItemButton } from '@/components/Cart/DeleteItemButton'
@@ -27,8 +28,11 @@ type VariantOptionRef = NonNullable<Variant['options']>[number]
  * The review step exists because at this price point buyers want one look at
  * exactly what they are about to pay before any payment form appears (the
  * research is consistent that instant-payment flows win only at low AOV). It
- * is also where the shop's pricing promises are kept explicit: free shipping
- * and duties included, so the total Stripe asks for is the total they saw.
+ * is also where the shop's pricing promises are kept explicit: shipping (free
+ * over the threshold, a flat fee below it — lib/commerce/shipping.ts) and
+ * duties are both priced here exactly as Stripe will charge them, so the
+ * total on checkout.stripe.com can never surprise a customer who read this
+ * page.
  *
  * Everything after the button happens on checkout.stripe.com — Stripe's
  * full-page checkout collecting email, delivery address (with autocomplete),
@@ -40,13 +44,19 @@ type VariantOptionRef = NonNullable<Variant['options']>[number]
  *
  * We maintain no address UI, no card UI, and load no Stripe.js on this site.
  */
-export const CheckoutPage: React.FC = () => {
+export const CheckoutPage: React.FC<{
+  freeShippingThreshold?: number | null
+  flatShippingFee?: number | null
+}> = ({ freeShippingThreshold, flatShippingFee }) => {
   const { user } = useAuth()
   const { cart } = useCart()
   const { startCheckout, isRedirecting } = useStripeCheckout()
   const [error, setError] = useState<string | null>(null)
 
   const cartIsEmpty = !cart || !cart.items || !cart.items.length
+  const subtotal = cart?.subtotal || 0
+  const shippingAmount = shippingCostCents(subtotal, { freeShippingThreshold, flatShippingFee })
+  const amountToFree = centsToFreeShipping(subtotal, { freeShippingThreshold, flatShippingFee })
 
   // Variant lines excluded: variants price themselves and carry no compare-at.
   const savings = totalSavingsCents(
@@ -225,12 +235,17 @@ export const CheckoutPage: React.FC = () => {
           )}
           <div className="flex justify-between">
             <span>Subtotal</span>
-            <Price amount={cart?.subtotal || 0} />
+            <Price amount={subtotal} />
           </div>
           <div className="flex justify-between">
             <span>Shipping</span>
-            <span>Free</span>
+            {shippingAmount === 0 ? <span>Free</span> : <Price amount={shippingAmount} />}
           </div>
+          {shippingAmount > 0 && (
+            <p className="text-xs text-muted-foreground">
+              Add ${(amountToFree / 100).toFixed(2)} more to qualify for free shipping.
+            </p>
+          )}
           <div className="flex justify-between">
             <span>Duties &amp; import taxes</span>
             <span>Included</span>
@@ -238,7 +253,7 @@ export const CheckoutPage: React.FC = () => {
         </div>
         <div className="flex items-center justify-between gap-2 border-t pt-4">
           <span className="uppercase">Total</span>{' '}
-          <Price className="text-3xl font-medium" amount={cart?.subtotal || 0} />
+          <Price className="text-3xl font-medium" amount={subtotal + shippingAmount} />
         </div>
       </div>
     </div>

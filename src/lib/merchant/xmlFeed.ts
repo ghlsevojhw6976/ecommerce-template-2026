@@ -72,6 +72,17 @@ const itemXml = (input: MerchantProductInput): string => {
     tag('g:size', attrs.size),
     tag('g:google_product_category', attrs.googleProductCategory),
     tag('g:shipping_label', attrs.shippingLabel),
+    ...(attrs.shipping
+      ? [
+          '<g:shipping>',
+          tag('g:country', attrs.shipping.country),
+          tag(
+            'g:price',
+            microsToFeedPrice(attrs.shipping.price.amountMicros, attrs.shipping.price.currencyCode),
+          ),
+          '</g:shipping>',
+        ]
+      : []),
     '</item>',
   ]
     .filter(Boolean)

@@ -20,6 +20,7 @@ import { useCartUI } from '@/providers/Cart'
 import { useStripeCheckout } from '@/components/checkout/useStripeCheckout'
 import { gaItem, trackBeginCheckout, trackViewCart, type GaItem } from '@/lib/analytics/gtag'
 import { totalSavingsCents } from '@/lib/commerce/discount'
+import { shippingCostCents, centsToFreeShipping } from '@/lib/commerce/shipping'
 import { toast } from 'sonner'
 
 import { DeleteItemButton } from './DeleteItemButton'
@@ -32,7 +33,13 @@ type GalleryItem = NonNullable<Product['gallery']>[number]
 type VariantOptionRef = NonNullable<Variant['options']>[number]
 
 
-export function CartModal() {
+export function CartModal({
+  freeShippingThreshold,
+  flatShippingFee,
+}: {
+  freeShippingThreshold?: number | null
+  flatShippingFee?: number | null
+}) {
   const { cart } = useCart()
   const { startCheckout, isRedirecting } = useStripeCheckout()
   // Open state lives in a shared context so Add to cart can open the drawer —
@@ -86,6 +93,10 @@ export function CartModal() {
     [cart],
   )
 
+  const subtotal = typeof cart?.subtotal === 'number' ? cart.subtotal : 0
+  const shippingAmount = shippingCostCents(subtotal, { freeShippingThreshold, flatShippingFee })
+  const amountToFree = centsToFreeShipping(subtotal, { freeShippingThreshold, flatShippingFee })
+
   return (
     <Sheet onOpenChange={setOpen} open={isOpen}>
       <SheetTrigger asChild>
@@ -100,7 +111,9 @@ export function CartModal() {
           <SheetTitle>My Cart</SheetTitle>
 
           <SheetDescription>
-            Free shipping and 30-day returns on every order.
+            {shippingAmount === 0
+              ? 'Free shipping and 30-day returns on every order.'
+              : `$${(shippingAmount / 100).toFixed(2)} flat-rate shipping (add $${(amountToFree / 100).toFixed(2)} more for free shipping) · 30-day returns.`}
           </SheetDescription>
         </SheetHeader>
 
@@ -244,13 +257,20 @@ export function CartModal() {
                     </div>
                   )}
                   {typeof cart?.subtotal === 'number' && (
-                    <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
-                      <p>Subtotal</p>
-                      <Price
-                        amount={cart?.subtotal}
-                        className="text-right text-base text-black dark:text-white"
-                      />
-                    </div>
+                    <>
+                      <div className="mb-1 flex items-center justify-between pt-1">
+                        <p>Subtotal</p>
+                        <Price amount={cart.subtotal} className="text-right" />
+                      </div>
+                      <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
+                        <p>Shipping</p>
+                        {shippingAmount === 0 ? (
+                          <span className="text-right">Free</span>
+                        ) : (
+                          <Price amount={shippingAmount} className="text-right" />
+                        )}
+                      </div>
+                    </>
                   )}
 
                   {/* Straight into Stripe — the drawer above IS the review.
