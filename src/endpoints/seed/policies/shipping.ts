@@ -24,7 +24,7 @@ export const shippingPage = {
 
       h('h2', 'Cost'),
       p(
-        'Shipping is free on every order, with no minimum spend.',
+        'Standard shipping is free on orders over **{{company.freeShippingThreshold}}**. Below that, the exact cost is calculated from the weight and destination of your basket and shown before you enter any payment details.',
       ),
       p(
         'Prices shown on the site exclude sales tax where applicable. Tax is calculated at checkout based on your delivery address, and shown before you pay.',

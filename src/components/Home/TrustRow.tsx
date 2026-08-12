@@ -26,15 +26,17 @@ import { GUARANTEE_MONTHS, GUARANTEE_TAGLINE } from '@/lib/commerce/guarantee'
 export const TrustRow: React.FC = async () => {
   const company = await getCompany()
 
+  const threshold = company.freeShippingThreshold
   const returnDays = company.returnWindowDays ?? 30
   const processing = company.processingTimeDays ?? 2
 
   const items = [
     {
       icon: Truck,
-      // Shipping is unconditionally free — checkout never charges for it
-      // regardless of order size, so this never quotes a threshold.
-      title: 'Free shipping',
+      title:
+        typeof threshold === 'number' && threshold > 0
+          ? `Free shipping over $${(threshold / 100).toFixed(0)}`
+          : 'Free shipping',
       detail: `Dispatched in ${processing} business day${processing === 1 ? '' : 's'}`,
       href: '/shipping',
     },

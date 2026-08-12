@@ -42,7 +42,7 @@ export const faqPage = {
 
       h('h3', 'How much is shipping?'),
       p(
-        'Free, on every order — no minimum spend.',
+        'Free on orders over **{{company.freeShippingThreshold}}**. Below that it depends on weight and destination, and the exact figure is shown before you enter payment details — never as a surprise at the last step.',
       ),
 
       h('h3', 'How long will it take?'),
