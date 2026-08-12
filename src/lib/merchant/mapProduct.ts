@@ -58,7 +58,16 @@ export const mapProduct = ({
   serverUrl,
   shippingPolicy,
 }: MapProductArgs): MappedProduct => {
-  const offerId = product.slug || String(product.id)
+  // The numeric database id, NOT the slug: Google's Merchant `id` attribute
+  // has a hard 50-character cap and this catalogue's slugs run 20–100+
+  // chars, which fails validation ("Value too long in attribute: id") on
+  // most of the catalogue. The id is also the more correct choice
+  // independent of length — Google treats a changed id as a brand-new item
+  // (losing the old one's performance history), and slugs get edited during
+  // ordinary catalogue maintenance while the database id never does. Kept
+  // in lockstep with GA4's item_id (lib/analytics/items.ts) so Ads/GA4/
+  // Shopping reports still join on one shared key, just a robust one.
+  const offerId = String(product.id) || product.slug || ''
   const skip = (reason: string): MappedProduct => ({ ok: false, offerId, reason })
 
   // --- Policy gates. Order matters: report the most specific reason. --------

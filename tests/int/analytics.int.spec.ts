@@ -20,7 +20,7 @@ describe('centsToGa', () => {
 })
 
 describe('gaItem', () => {
-  it('uses the slug as item_id — the Merchant feed offerId, so GA/Ads/GMC join on one key', () => {
+  it('uses the numeric id as item_id — the Merchant feed offerId, so GA/Ads/GMC join on one key', () => {
     const item = gaItem({
       slug: 'mixer-pro',
       id: 7,
@@ -28,7 +28,7 @@ describe('gaItem', () => {
       priceInUSD: 54999,
       brand: 'Acme',
     })
-    expect(item.item_id).toBe('mixer-pro')
+    expect(item.item_id).toBe('7')
     expect(item.item_name).toBe('Mixer Pro')
     expect(item.price).toBe(549.99)
     expect(item.quantity).toBe(1)
@@ -36,15 +36,20 @@ describe('gaItem', () => {
   })
 
   it('emits discount only for a genuine compare-at, in decimal units', () => {
-    const onSale = gaItem({ slug: 'a', priceInUSD: 46000, compareAtPriceInUSD: 50000 })
+    const onSale = gaItem({ id: 1, slug: 'a', priceInUSD: 46000, compareAtPriceInUSD: 50000 })
     expect(onSale.discount).toBe(40)
 
-    const inverted = gaItem({ slug: 'b', priceInUSD: 50000, compareAtPriceInUSD: 40000 })
+    const inverted = gaItem({ id: 2, slug: 'b', priceInUSD: 50000, compareAtPriceInUSD: 40000 })
     expect(inverted.discount).toBeUndefined()
   })
 
-  it('falls back to the id when a slug is missing', () => {
-    expect(gaItem({ id: 42, title: 'X', priceInUSD: 100 }).item_id).toBe('42')
+  it('falls back to the slug only when an id is genuinely missing', () => {
+    expect(gaItem({ slug: 'x-slug', title: 'X', priceInUSD: 100 }).item_id).toBe('x-slug')
+  })
+
+  it('never emits an item_id from a slug when an id is present — Google\'s Merchant id attribute caps at 50 chars and this catalogue\'s slugs regularly exceed it', () => {
+    const longSlug = 'a'.repeat(80)
+    expect(gaItem({ id: 999, slug: longSlug, title: 'Y', priceInUSD: 100 }).item_id).toBe('999')
   })
 })
 
@@ -65,7 +70,7 @@ describe('orderToGaPurchase', () => {
     currency: 'USD',
     items: [
       {
-        product: { slug: 'grill-xl', title: 'Grill XL', priceInUSD: 139999 },
+        product: { id: 88, slug: 'grill-xl', title: 'Grill XL', priceInUSD: 139999 },
         quantity: 2,
       },
       // Product deleted since purchase — resolves to an id, must be skipped.
@@ -79,7 +84,7 @@ describe('orderToGaPurchase', () => {
     expect(purchase.value).toBe(2799.95)
     expect(purchase.currency).toBe('USD')
     expect(purchase.items).toHaveLength(1)
-    expect(purchase.items[0]).toMatchObject({ item_id: 'grill-xl', quantity: 2, price: 1399.99 })
+    expect(purchase.items[0]).toMatchObject({ item_id: '88', quantity: 2, price: 1399.99 })
   })
 
   it('falls back to line-item math when the order has no amount', () => {

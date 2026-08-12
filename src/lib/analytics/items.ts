@@ -7,8 +7,16 @@
  * Invariants:
  * - Money: our prices are integer CENTS; GA4 wants decimal currency units.
  *   `centsToGa` is the only conversion.
- * - item_id = product slug — the same key the Merchant feed uses as offerId,
- *   which lets GA4, Google Ads and Shopping reports join on one identifier.
+ * - item_id = the product's numeric database id (as a string) — the same
+ *   key the Merchant feed uses as offerId, which lets GA4, Google Ads and
+ *   Shopping reports join on one identifier. NOT the slug: slugs are long
+ *   (this catalogue's run 20–100+ chars) and Google's Merchant `id`
+ *   attribute has a hard 50-character cap — using the slug there fails
+ *   validation across most of a real catalogue. The id is also more
+ *   correct than the slug ever was for this purpose regardless of length:
+ *   Google explicitly treats a changed `id` as a NEW item (losing the old
+ *   one's history), and slugs get edited during ordinary catalogue
+ *   maintenance (title fixes, SEO tweaks) — the database id never does.
  */
 
 export type GaItem = {
@@ -52,7 +60,7 @@ export const gaItem = (product: ProductLike, quantity = 1): GaItem => {
       : undefined
 
   return {
-    item_id: product.slug || String(product.id ?? ''),
+    item_id: String(product.id ?? product.slug ?? ''),
     item_name: product.title ?? '',
     price: centsToGa(price),
     quantity,

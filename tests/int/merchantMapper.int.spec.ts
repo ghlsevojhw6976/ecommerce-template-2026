@@ -108,9 +108,18 @@ describe('mapProduct — payload shape', () => {
   it('builds the composite identity fields', () => {
     const result = mapped()
     if (!result.ok) throw new Error('expected mapping to succeed')
-    expect(result.input.offerId).toBe('test-product')
+    expect(result.input.offerId).toBe('1')
     expect(result.input.contentLanguage).toBe('en')
     expect(result.input.feedLabel).toBe('LT')
+  })
+
+  it('uses the numeric id as offerId, never the slug — Google\'s Merchant `id` attribute caps at 50 chars and this catalogue\'s real slugs run well past that', () => {
+    const longSlug = 'a-very-long-descriptive-title-with-an-asin-suffix-that-easily-exceeds-fifty-characters-b0abcdefgh'
+    expect(longSlug.length).toBeGreaterThan(50)
+    const result = mapped({ id: 42, slug: longSlug })
+    if (!result.ok) throw new Error('expected mapping to succeed')
+    expect(result.input.offerId).toBe('42')
+    expect(result.input.offerId.length).toBeLessThanOrEqual(50)
   })
 
   it('emits price as micros with the market currency', () => {
