@@ -128,7 +128,27 @@ const SPEC_SKIP = new Set([
   'upc',
   'manufacturer_part_number',
   'model_number',
+  // 40tag is not an authorized retailer for the brands it sells and cannot
+  // promise their manufacturer warranties will be honored — every
+  // warranty/guarantee claim on the site references the single 40tag
+  // Guarantee instead (src/lib/commerce/guarantee.ts). A manufacturer
+  // warranty term surfacing here as a spec row would contradict that.
+  // Owner decision 2026-08-12.
+  'manufacturer_warranty_description',
+  'warranty_description',
+  'warranty_type',
 ])
+
+/** Same warranty exclusion, applied to a bullet's own label. */
+const isWarrantyBullet = (label: string): boolean => /warrant/i.test(label)
+
+/**
+ * "Beverage Center, Manual, Warranty" -> "Beverage Center, Manual" — strips
+ * a trailing comma-separated list item that names a warranty, without
+ * touching the rest of a legitimate list (e.g. "In the box" contents).
+ */
+const stripTrailingWarrantyItem = (text: string): string =>
+  text.replace(/,\s*[\w\s-]*warrant[\w\s-]*\.?$/i, '').trim()
 
 export const mapRow = (table: CsvTable, row: string[]): MappedRow => {
   const get = (name: string, occurrence = 0) => cell(table, row, name, occurrence)
@@ -166,6 +186,15 @@ export const mapRow = (table: CsvTable, row: string[]): MappedRow => {
         ? { feature: (label ?? '').trim(), detail: rest.join(':').trim() }
         : { feature: bullet }
     })
+    // Drop bullets that ARE a warranty claim outright (feature: "Warranty").
+    // A bullet whose label is something else (e.g. "Includes") but whose
+    // detail mentions warranty as a trailing list item — "Manual, Warranty"
+    // — gets the list item stripped instead, same as the SPEC_SKIP rule
+    // above and for the same reason.
+    .filter((f) => !isWarrantyBullet(f.feature))
+    .map((f) =>
+      f.detail ? { ...f, detail: stripTrailingWarrantyItem(f.detail) } : f,
+    )
 
   // ---- specifications ---------------------------------------------------
   const attributes = jsonCell<Record<string, unknown>>(table, row, 'attributes_json', {})

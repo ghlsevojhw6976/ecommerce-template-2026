@@ -33,9 +33,23 @@ const groupSpecs = (specs: Spec[]): { group: string | null; rows: Spec[] }[] => 
   return groups
 }
 
+/**
+ * 40tag is not an authorized retailer for the brands it sells and cannot
+ * promise their manufacturer warranties will be honored — every warranty/
+ * guarantee claim on the site references the single 40tag Guarantee
+ * instead (src/lib/commerce/guarantee.ts, surfaced in Reassurance.tsx).
+ * A manufacturer warranty term must never reach this table, however it got
+ * into the data — the import script excludes it at the source
+ * (src/lib/import/mapRow.ts) but this filter is the last line of defence
+ * regardless of how a row got here. Owner decision 2026-08-12.
+ */
+const isWarrantyRow = (label?: string | null): boolean => Boolean(label && /warrant/i.test(label))
+
 export const Specifications: React.FC<{ product: Product }> = ({ product }) => {
-  const specs = (product.specifications ?? []).filter((s) => s?.label && s?.value)
-  const features = (product.keyFeatures ?? []).filter((f) => f?.feature)
+  const specs = (product.specifications ?? []).filter(
+    (s) => s?.label && s?.value && !isWarrantyRow(s.label),
+  )
+  const features = (product.keyFeatures ?? []).filter((f) => f?.feature && !isWarrantyRow(f.feature))
   const boxContents = (product.inTheBox ?? []).filter((i) => i?.item)
   const care = product.careInstructions?.trim()
 
