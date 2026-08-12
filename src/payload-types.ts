@@ -392,7 +392,7 @@ export interface Product {
    */
   careInstructions?: string | null;
   /**
-   * Shown near the buy button. Expected at this price point; leave blank to fall back to the shop default.
+   * ⚠️ Currently unused — no page reads this field. All warranty/guarantee copy was consolidated to the single 40tag Guarantee (src/lib/commerce/guarantee.ts) on 2026-08-12, since 40tag is not an authorized retailer for the brands it sells and cannot promise per-product manufacturer warranty terms. Left in the schema rather than deleted (a destructive change); safe to remove properly if it stays unused.
    */
   warrantyMonths?: number | null;
   /**
@@ -2386,7 +2386,7 @@ export interface Homepage {
   showCategories?: boolean | null;
   showFeatured?: boolean | null;
   /**
-   * Returns, shipping and warranty. Worth keeping on — at higher price points the blocker is risk rather than price.
+   * Returns, shipping and the 40tag Guarantee. Worth keeping on — at higher price points the blocker is risk rather than price.
    */
   showTrustRow?: boolean | null;
   updatedAt?: string | null;
@@ -2503,7 +2503,7 @@ export interface Company {
    */
   returnWindowDays?: number | null;
   /**
-   * Used when a product does not specify its own.
+   * ⚠️ Currently unused — no page reads this field. All warranty/guarantee copy was consolidated to the single 40tag Guarantee (src/lib/commerce/guarantee.ts) on 2026-08-12, since 40tag is not an authorized retailer for the brands it sells and cannot promise per-product manufacturer warranty terms. Left in the schema rather than deleted (a destructive change); safe to remove properly if it stays unused.
    */
   defaultWarrantyMonths?: number | null;
   /**
@@ -2518,6 +2518,10 @@ export interface Company {
    * Free returns materially reduce hesitation on high-value orders — 15% of shoppers abandon over an unsatisfactory return policy.
    */
   returnsShippingPaidBy?: ('merchant' | 'customer') | null;
+  /**
+   * Sitewide switch. Off hides the review list, the star rating, and the review count everywhere they appear (product pages, shop grid cards, the homepage hero) and drops aggregateRating from product structured data — not just the review list on its own, since a star badge with nothing behind it reads worse than no rating at all. Reviews themselves are never deleted, only unrendered. Saving this triggers a full site revalidation.
+   */
+  reviewsEnabled?: boolean | null;
   /**
    * Master switch. When off, the disclaimer disappears from every page and the {{company.shippingDisclaimer}} placeholder resolves to nothing — no empty headings, no stray braces.
    */
@@ -2910,6 +2914,7 @@ export interface CompanySelect<T extends boolean = true> {
   freeShippingThreshold?: T;
   processingTimeDays?: T;
   returnsShippingPaidBy?: T;
+  reviewsEnabled?: T;
   shippingDisclaimerEnabled?: T;
   shipsFrom?: T;
   shipsTo?: T;
