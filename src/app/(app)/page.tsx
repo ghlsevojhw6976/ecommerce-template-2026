@@ -19,7 +19,7 @@ import { getNavCategories, type NavCategory } from '@/utilities/getNavCategories
  *
  * The trust row sits directly under the hero rather than at the foot of the
  * page. At higher price points the blocker is risk, not price, and burying
- * "30-day returns, 2-year warranty" below every other section means the
+ * "30-day returns, 24-Month Guarantee" below every other section means the
  * visitor deciding whether the shop is legitimate never reaches it.
  *
  * Every section self-hides when it has no data, so a shop mid-setup never

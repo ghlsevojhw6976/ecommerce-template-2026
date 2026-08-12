@@ -310,7 +310,8 @@ export const CompanySettings: GlobalConfig = {
                   min: 0,
                   admin: {
                     width: '50%',
-                    description: 'Used when a product does not specify its own.',
+                    description:
+                      '⚠️ Currently unused — no page reads this field. All warranty/guarantee copy was consolidated to the single 40tag Guarantee (src/lib/commerce/guarantee.ts) on 2026-08-12, since 40tag is not an authorized retailer for the brands it sells and cannot promise per-product manufacturer warranty terms. Left in the schema rather than deleted (a destructive change); safe to remove properly if it stays unused.',
                   },
                 },
               ],

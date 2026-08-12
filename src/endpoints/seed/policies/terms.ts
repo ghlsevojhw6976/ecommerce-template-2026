@@ -80,7 +80,7 @@ export const termsPage = {
 
       h('h2', 'Warranties'),
       p(
-        'Products carry the manufacturer’s warranty where one applies; the term is stated on the product page. This is in addition to, not instead of, your statutory rights.',
+        'All products are backed by the 40tag 24-Month Guarantee, covering defects in materials or workmanship for 24 months from delivery. This is in addition to, not instead of, your statutory rights. Where a manufacturer separately offers its own warranty, this does not replace or limit that — but 40tag’s guarantee applies regardless.',
       ),
 
       h('h2', 'Acceptable use'),

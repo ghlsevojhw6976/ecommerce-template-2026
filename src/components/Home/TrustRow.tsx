@@ -3,6 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import { getCompany } from '@/utilities/getCompany'
+import { GUARANTEE_MONTHS, GUARANTEE_TAGLINE } from '@/lib/commerce/guarantee'
 
 /**
  * Trust row.
@@ -12,7 +13,12 @@ import { getCompany } from '@/utilities/getCompany'
  * €400–1200 the blocker is risk rather than price.
  *
  * Values come from Company settings, so this can never contradict the
- * announcement bar, the product page or the returns policy.
+ * announcement bar, the product page or the returns policy — EXCEPT the
+ * guarantee line, deliberately static and imported from the same shared
+ * constant as the product page's reassurance block (not Company settings):
+ * 40tag is not an authorized retailer for the brands it sells, so it cannot
+ * promise their manufacturer warranties will be honored, and this row must
+ * never vary or imply otherwise.
  *
  * Text and thin icons, no badge graphics: fake-looking trust seals undermine
  * exactly the thing they are meant to establish.
@@ -22,7 +28,6 @@ export const TrustRow: React.FC = async () => {
 
   const threshold = company.freeShippingThreshold
   const returnDays = company.returnWindowDays ?? 30
-  const warrantyMonths = company.defaultWarrantyMonths
   const processing = company.processingTimeDays ?? 2
 
   const items = [
@@ -41,17 +46,12 @@ export const TrustRow: React.FC = async () => {
       detail: 'No restocking fees',
       href: '/returns',
     },
-    warrantyMonths
-      ? {
-          icon: ShieldCheck,
-          title:
-            warrantyMonths >= 12
-              ? `${Math.round(warrantyMonths / 12)}-year warranty`
-              : `${warrantyMonths}-month warranty`,
-          detail: 'Covered against defects',
-          href: '/faq',
-        }
-      : null,
+    {
+      icon: ShieldCheck,
+      title: `${GUARANTEE_MONTHS}-Month Guarantee`,
+      detail: GUARANTEE_TAGLINE,
+      href: '/faq',
+    },
     {
       icon: PackageCheck,
       title: 'Chosen, not listed',

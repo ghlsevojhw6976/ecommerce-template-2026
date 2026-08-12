@@ -159,7 +159,7 @@ export const Homepage: GlobalConfig = {
               defaultValue: true,
               admin: {
                 description:
-                  'Returns, shipping and warranty. Worth keeping on — at higher price points the blocker is risk rather than price.',
+                  'Returns, shipping and the 40tag Guarantee. Worth keeping on — at higher price points the blocker is risk rather than price.',
               },
             },
           ],

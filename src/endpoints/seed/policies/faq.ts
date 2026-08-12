@@ -81,7 +81,7 @@ export const faqPage = {
 
       h('h3', 'Is there a warranty?'),
       p(
-        'Where a product carries a manufacturer warranty the term is stated on its product page. That is in addition to your statutory rights, not instead of them.',
+        'All products are backed by the 40tag 24-Month Guarantee, covering defects in materials or workmanship for 24 months from delivery — in addition to, not instead of, your statutory rights.',
       ),
 
       h('h2', 'Products'),

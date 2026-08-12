@@ -3,6 +3,7 @@ import Link from 'next/link'
 import React from 'react'
 
 import type { Product } from '@/payload-types'
+import { GUARANTEE_NAME, GUARANTEE_TAGLINE } from '@/lib/commerce/guarantee'
 
 /**
  * The reassurance block that sits directly under the buy button.
@@ -17,21 +18,19 @@ import type { Product } from '@/payload-types'
  * Deliberately plain: no badge graphics, no shields with ticks. Fake-looking
  * trust badges undermine the thing they are trying to establish. Plain text
  * next to a thin icon reads as fact rather than decoration.
+ *
+ * The guarantee line is intentionally static, imported from one shared
+ * constant rather than derived from a per-product field — 40tag is not an
+ * authorized retailer for the brands it sells, so it cannot promise their
+ * manufacturer warranties will be honored, and no product page may imply
+ * otherwise. Every product shows the identical 40tag Guarantee line.
  */
 
 const SHOP_DEFAULT_RETURN_DAYS = 30
 
 export const Reassurance: React.FC<{ product: Product }> = ({ product }) => {
   const returnDays = product.returnWindowDays ?? SHOP_DEFAULT_RETURN_DAYS
-  const warrantyMonths = product.warrantyMonths
   const freeShipping = product.freeShippingEligible !== false
-
-  const warrantyLabel =
-    warrantyMonths && warrantyMonths >= 12
-      ? `${Math.round(warrantyMonths / 12)}-year warranty`
-      : warrantyMonths
-        ? `${warrantyMonths}-month warranty`
-        : null
 
   const items = [
     freeShipping && {
@@ -47,10 +46,10 @@ export const Reassurance: React.FC<{ product: Product }> = ({ product }) => {
       href: '/returns',
       detail: 'Read the policy',
     },
-    warrantyLabel && {
+    {
       icon: ShieldCheck,
-      label: warrantyLabel,
-      detail: 'Covered against defects',
+      label: `Backed by the ${GUARANTEE_NAME}`,
+      detail: GUARANTEE_TAGLINE,
     },
     {
       icon: Lock,
