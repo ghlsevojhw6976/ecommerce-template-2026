@@ -10,6 +10,10 @@ import { getCompany } from '@/utilities/getCompany'
  * cart. Unexpected cost at checkout is the single biggest abandonment cause
  * (39%), and the cheapest place to defuse it is the top of every page.
  *
+ * Shipping is unconditionally free (DDP, duties included) — checkout never
+ * charges for it regardless of order size, so this line states that plainly
+ * rather than quoting a threshold that doesn't gate anything.
+ *
  * Values come from Company settings, so this can never contradict the product
  * page or the returns policy. Renders nothing when neither is configured,
  * rather than showing an empty band.
@@ -17,15 +21,10 @@ import { getCompany } from '@/utilities/getCompany'
 export const AnnouncementBar: React.FC = async () => {
   const company = await getCompany()
 
-  const threshold = company.freeShippingThreshold
   const returnDays = company.returnWindowDays
 
   const messages = [
-    typeof threshold === 'number' && threshold > 0
-      ? `Free shipping over $${(threshold / 100).toFixed(0)}`
-      : threshold === 0
-        ? 'Free shipping on every order'
-        : null,
+    'Free shipping',
     typeof returnDays === 'number' && returnDays > 0 ? `${returnDays}-day returns` : null,
   ].filter(Boolean) as string[]
 
