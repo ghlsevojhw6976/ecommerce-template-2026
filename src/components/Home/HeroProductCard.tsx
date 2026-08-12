@@ -7,6 +7,7 @@ import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
 import { DiscountBadge } from '@/components/product/DiscountBadge'
 import { Rating } from '@/components/product/Rating'
+import { getCompany } from '@/utilities/getCompany'
 
 /**
  * The product card that occupies the other half of the hero.
@@ -21,9 +22,12 @@ import { Rating } from '@/components/product/Rating'
  * "Discover" button performs worse than a concrete product with a number on it:
  * price is the question everyone is silently asking.
  */
-export const HeroProductCard: React.FC<{ product: Product }> = ({ product }) => {
+export const HeroProductCard: React.FC<{ product: Product }> = async ({ product }) => {
   const image = product.gallery?.[0]?.image
   const hasImage = image && typeof image === 'object'
+  // Sitewide kill switch (Settings → Company → Policies).
+  const company = await getCompany()
+  const reviewsEnabled = company.reviewsEnabled !== false
 
   return (
     <Link
@@ -67,8 +71,12 @@ export const HeroProductCard: React.FC<{ product: Product }> = ({ product }) => 
             )}
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-4">
-            <Rating average={product.ratingAverage} count={product.ratingCount} size="sm" />
+          <div
+            className={`mt-2 flex items-center gap-4 ${reviewsEnabled ? 'justify-between' : 'justify-end'}`}
+          >
+            {reviewsEnabled && (
+              <Rating average={product.ratingAverage} count={product.ratingCount} size="sm" />
+            )}
             <span className="flex items-center gap-1 text-xs text-muted-foreground transition-colors group-hover:text-foreground">
               View
               <ArrowRight

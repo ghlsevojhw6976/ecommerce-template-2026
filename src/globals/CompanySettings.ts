@@ -350,6 +350,15 @@ export const CompanySettings: GlobalConfig = {
                   'Free returns materially reduce hesitation on high-value orders — 15% of shoppers abandon over an unsatisfactory return policy.',
               },
             },
+            {
+              name: 'reviewsEnabled',
+              type: 'checkbox',
+              defaultValue: true,
+              admin: {
+                description:
+                  'Sitewide switch. Off hides the review list, the star rating, and the review count everywhere they appear (product pages, shop grid cards, the homepage hero) and drops aggregateRating from product structured data — not just the review list on its own, since a star badge with nothing behind it reads worse than no rating at all. Reviews themselves are never deleted, only unrendered. Saving this triggers a full site revalidation.',
+              },
+            },
           ],
         },
 

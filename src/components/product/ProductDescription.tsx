@@ -60,6 +60,7 @@ export function ProductDescription({
   shippingDisclaimer,
   familySelector,
   pooledRating,
+  reviewsEnabled = true,
 }: {
   product: Product
   /** Server-rendered slot — the disclaimer reads Company settings, and this
@@ -70,6 +71,12 @@ export function ProductDescription({
   familySelector?: React.ReactNode
   /** Ratings pooled across the product family (Baymard: 31+9 must read 40). */
   pooledRating?: { average: number | null; count: number }
+  /** Sitewide kill switch (Settings → Company → Policies), resolved by the
+      server-component parent. Deliberately explicit rather than inferred
+      from `pooledRating` being empty — a falsy pooledRating on its own
+      still falls through to the product's OWN rating below, which would
+      silently defeat the toggle. */
+  reviewsEnabled?: boolean
 }) {
   const { currency } = useCurrency()
   // Every product owns exactly one price now — colour/size siblings are
@@ -105,13 +112,16 @@ export function ProductDescription({
 
       <h1 className="text-3xl leading-[1.1] md:text-4xl">{product.title}</h1>
 
-      {/* Self-hides when the product has no reviews. Pooled across the
-          family, so every sibling shows the same combined figure. */}
-      <Rating
-        average={pooledRating ? pooledRating.average : product.ratingAverage}
-        className="mt-4"
-        count={pooledRating ? pooledRating.count : product.ratingCount}
-      />
+      {/* Self-hides when the product has no reviews, or off entirely when
+          reviews are disabled sitewide. Pooled across the family, so every
+          sibling shows the same combined figure. */}
+      {reviewsEnabled && (
+        <Rating
+          average={pooledRating ? pooledRating.average : product.ratingAverage}
+          className="mt-4"
+          count={pooledRating ? pooledRating.count : product.ratingCount}
+        />
+      )}
 
       {product.shortDescription && (
         <p className="prose-measure mt-5 text-base leading-relaxed text-muted-foreground">

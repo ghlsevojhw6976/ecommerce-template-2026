@@ -5,6 +5,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 
 import type { Media, Product, Review } from '@/payload-types'
+import { getCompany } from '@/utilities/getCompany'
 import { Rating } from './Rating'
 
 /**
@@ -46,6 +47,12 @@ export const Reviews: React.FC<{
   familyIds?: (number | string)[]
   pooledRating?: { average: number | null; count: number }
 }> = async ({ product, familyIds, pooledRating }) => {
+  // Sitewide kill switch (Settings → Company → Policies). Checked first —
+  // cheapest possible gate, and the review query below never runs at all
+  // when off.
+  const company = await getCompany()
+  if (company.reviewsEnabled === false) return null
+
   const ratingCount = pooledRating ? pooledRating.count : product.ratingCount
   const ratingAverage = pooledRating ? pooledRating.average : product.ratingAverage
 

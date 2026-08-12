@@ -152,6 +152,11 @@ export default async function ProductPage({ params }: Args) {
     url ? (url.startsWith('http') ? url : `${baseUrl}${url}`) : undefined
 
   const company = await getCompany()
+  // Sitewide kill switch (Settings → Company → Policies) — gates the review
+  // list (Reviews.tsx self-checks), the star rating shown next to the H1,
+  // and aggregateRating in this page's own structured data. A rating badge
+  // with no review list behind it reads worse than neither.
+  const reviewsEnabled = company.reviewsEnabled !== false
 
   // `image` is REQUIRED for merchant-listing rich results — without it the
   // whole block is ineligible. Meta image first, then the entire gallery.
@@ -164,11 +169,12 @@ export default async function ProductPage({ params }: Args) {
   // 90% case — getFamily returns [] without an itemGroupId) uses its own
   // aggregate. Gating stars on family membership silently dropped them for
   // 344 of 382 products.
-  const rating =
-    pooledRating ??
-    (typeof product.ratingAverage === 'number' && (product.ratingCount ?? 0) > 0
-      ? { average: product.ratingAverage, count: product.ratingCount! }
-      : undefined)
+  const rating = reviewsEnabled
+    ? (pooledRating ??
+      (typeof product.ratingAverage === 'number' && (product.ratingCount ?? 0) > 0
+        ? { average: product.ratingAverage, count: product.ratingCount! }
+        : undefined))
+    : undefined
 
   const conditionUrl = {
     new: 'https://schema.org/NewCondition',
@@ -385,6 +391,7 @@ export default async function ProductPage({ params }: Args) {
               familySelector={<FamilySelector family={family} product={product} />}
               pooledRating={pooledRating}
               product={product}
+              reviewsEnabled={reviewsEnabled}
               shippingDisclaimer={<ShippingDisclaimer />}
             />
           </div>

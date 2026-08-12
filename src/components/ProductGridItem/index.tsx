@@ -7,13 +7,18 @@ import { Media } from '@/components/Media'
 import { Price } from '@/components/Price'
 import { DiscountBadge } from '@/components/product/DiscountBadge'
 import { Rating } from '@/components/product/Rating'
+import { getCompany } from '@/utilities/getCompany'
 
 type Props = {
   product: Partial<Product>
 }
 
-export const ProductGridItem: React.FC<Props> = ({ product }) => {
+export const ProductGridItem: React.FC<Props> = async ({ product }) => {
   const { gallery, priceInUSD, title } = product
+  // Sitewide kill switch (Settings → Company → Policies). getCompany() is
+  // request-cached, so this costs nothing extra across a grid of cards.
+  const company = await getCompany()
+  const reviewsEnabled = company.reviewsEnabled !== false
 
   // Every product owns its price — siblings are separate products now.
   const price = priceInUSD
@@ -67,13 +72,16 @@ export const ProductGridItem: React.FC<Props> = ({ product }) => {
         )}
       </div>
 
-      {/* Self-hides when the product has no reviews — see Rating. */}
-      <Rating
-        average={product.ratingAverage}
-        className="mt-1.5"
-        count={product.ratingCount}
-        size="sm"
-      />
+      {/* Self-hides when the product has no reviews — see Rating. Also off
+          entirely when reviews are disabled sitewide. */}
+      {reviewsEnabled && (
+        <Rating
+          average={product.ratingAverage}
+          className="mt-1.5"
+          count={product.ratingCount}
+          size="sm"
+        />
+      )}
     </Link>
   )
 }
