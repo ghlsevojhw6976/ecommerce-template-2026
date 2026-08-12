@@ -2511,6 +2511,10 @@ export interface Company {
    */
   freeShippingThreshold?: number | null;
   /**
+   * In MINOR units (cents). Charged on orders below the free-shipping threshold. Blank/0 means free shipping always, regardless of the threshold above. Read by checkout, cart, announcement bar, trust row, product pages and the Merchant feed from one shared calculation (src/lib/commerce/shipping.ts) — never hardcode this number elsewhere.
+   */
+  flatShippingFee?: number | null;
+  /**
    * Business days before dispatch.
    */
   processingTimeDays?: number | null;
@@ -2912,6 +2916,7 @@ export interface CompanySelect<T extends boolean = true> {
   returnWindowDays?: T;
   defaultWarrantyMonths?: T;
   freeShippingThreshold?: T;
+  flatShippingFee?: T;
   processingTimeDays?: T;
   returnsShippingPaidBy?: T;
   reviewsEnabled?: T;
