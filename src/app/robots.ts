@@ -14,14 +14,24 @@ import { getServerSideURL } from '@/utilities/getURL'
  * server-rendered precisely so machines can read them. Blocking training
  * crawlers is a per-shop values call; do it by adding explicit rules here.
  *
- * Googlebot and Googlebot-Image get their OWN explicit groups (2026-08-13),
- * identical in permissiveness to the `*` group they were already covered
- * by. Merchant Center's page-quality/policy checker ("Unable to do quality
- * & policy checks on product pages") flags a robots.txt that only names
- * `*` even though the wildcard technically already allows both — it wants
- * the two agents named outright before it will crawl product pages for
- * Shopping approval. Named groups are strictly additive here: nothing that
- * was allowed under `*` becomes disallowed for anyone else.
+ * Googlebot, Googlebot-Image and Storebot-Google all get their OWN explicit
+ * groups (2026-08-13/14), identical in permissiveness to the `*` group they
+ * were already covered by. Merchant Center's page-quality/policy checker
+ * ("Unable to do quality & policy checks on product pages") flags a
+ * robots.txt that only names `*` even though the wildcard technically
+ * already allows all three — it wants the agents named outright before it
+ * will crawl product pages for Shopping approval.
+ *
+ * ⚠️ Storebot-Google is the one that actually matters and the one Google's
+ * own error message does NOT mention — the error text only suggests
+ * Googlebot/Googlebot-Image (generic web-search crawlers), but per Google's
+ * own developer docs "crawling preferences addressed to the Storebot-Google
+ * user agent affect all surfaces of Google Shopping." Adding Googlebot/
+ * Googlebot-Image alone (2026-08-13) did not clear the error — it recurred
+ * >24h later — because Storebot-Google was still only covered by the
+ * wildcard, same as Googlebot originally was. Named groups are strictly
+ * additive here: nothing that was allowed under `*` becomes disallowed for
+ * anyone else.
  */
 const disallow = [
   '/admin',
@@ -50,6 +60,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: '*', allow: '/', disallow },
       { userAgent: 'Googlebot', allow: '/', disallow },
       { userAgent: 'Googlebot-Image', allow: '/', disallow },
+      { userAgent: 'Storebot-Google', allow: '/', disallow },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }
