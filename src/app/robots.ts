@@ -22,16 +22,24 @@ import { getServerSideURL } from '@/utilities/getURL'
  * already allows all three — it wants the agents named outright before it
  * will crawl product pages for Shopping approval.
  *
- * ⚠️ Storebot-Google is the one that actually matters and the one Google's
- * own error message does NOT mention — the error text only suggests
- * Googlebot/Googlebot-Image (generic web-search crawlers), but per Google's
- * own developer docs "crawling preferences addressed to the Storebot-Google
- * user agent affect all surfaces of Google Shopping." Adding Googlebot/
- * Googlebot-Image alone (2026-08-13) did not clear the error — it recurred
- * >24h later — because Storebot-Google was still only covered by the
- * wildcard, same as Googlebot originally was. Named groups are strictly
- * additive here: nothing that was allowed under `*` becomes disallowed for
- * anyone else.
+ * ⚠️ Storebot-Google is also worth naming explicitly — per Google's own
+ * developer docs "crawling preferences addressed to the Storebot-Google
+ * user agent affect all surfaces of Google Shopping." Google's own error
+ * message and its own robots.txt help article (support.google.com/
+ * merchants/answer/12467444) only ever mention Googlebot/Googlebot-Image,
+ * so this is belt-and-braces, not the confirmed root cause.
+ *
+ * ⚠️⚠️ THE ACTUAL ROOT CAUSE (found 2026-08-14, after the Googlebot fix
+ * alone didn't clear the error and the SAME error started showing on a
+ * product's IMAGE specifically): every product image is served from
+ * `/api/media/file/...` (Payload's media route), and the blanket
+ * `Disallow: /api/` below was applied to EVERY group, including
+ * Googlebot-Image and Storebot-Google — silently blocking every single
+ * product image from Google's crawlers this entire time, independent of
+ * which user-agents were named. `allowMedia` carves out that one path as a
+ * more-specific Allow, which wins over the shorter `Disallow: /api/` per
+ * robots.txt's longest-match-wins rule, while every other /api/ route
+ * (GraphQL, the ecommerce plugin's REST endpoints, etc.) stays blocked.
  */
 const disallow = [
   '/admin',
@@ -51,16 +59,19 @@ const disallow = [
   '/search',
 ]
 
+// More specific than `Disallow: /api/` above, so it wins for this one path.
+const allowMedia = ['/', '/api/media/']
+
 export default function robots(): MetadataRoute.Robots {
   const baseUrl = getServerSideURL()
 
   return {
     host: baseUrl,
     rules: [
-      { userAgent: '*', allow: '/', disallow },
-      { userAgent: 'Googlebot', allow: '/', disallow },
-      { userAgent: 'Googlebot-Image', allow: '/', disallow },
-      { userAgent: 'Storebot-Google', allow: '/', disallow },
+      { userAgent: '*', allow: allowMedia, disallow },
+      { userAgent: 'Googlebot', allow: allowMedia, disallow },
+      { userAgent: 'Googlebot-Image', allow: allowMedia, disallow },
+      { userAgent: 'Storebot-Google', allow: allowMedia, disallow },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
   }
