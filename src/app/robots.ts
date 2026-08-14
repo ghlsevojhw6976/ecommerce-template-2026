@@ -29,17 +29,28 @@ import { getServerSideURL } from '@/utilities/getURL'
  * merchants/answer/12467444) only ever mention Googlebot/Googlebot-Image,
  * so this is belt-and-braces, not the confirmed root cause.
  *
- * ⚠️⚠️ THE ACTUAL ROOT CAUSE (found 2026-08-14, after the Googlebot fix
- * alone didn't clear the error and the SAME error started showing on a
- * product's IMAGE specifically): every product image is served from
- * `/api/media/file/...` (Payload's media route), and the blanket
- * `Disallow: /api/` below was applied to EVERY group, including
+ * ⚠️⚠️ A second, real root cause (found 2026-08-14): every product image is
+ * served from `/api/media/file/...` (Payload's media route), and the
+ * blanket `Disallow: /api/` below was applied to EVERY group, including
  * Googlebot-Image and Storebot-Google — silently blocking every single
  * product image from Google's crawlers this entire time, independent of
  * which user-agents were named. `allowMedia` carves out that one path as a
  * more-specific Allow, which wins over the shorter `Disallow: /api/` per
  * robots.txt's longest-match-wins rule, while every other /api/ route
  * (GraphQL, the ecommerce plugin's REST endpoints, etc.) stays blocked.
+ *
+ * ⚠️⚠️⚠️ A THIRD root cause, and the one that finally explained a Merchant
+ * Center re-check FAILING within minutes of the above being confirmed live
+ * (2026-08-14): Next.js's `host` field on MetadataRoute.Robots emits a
+ * `Host: <url>` line. That's the Yandex-only `Host` directive — never part
+ * of the standard Google follows, and Google's own Search Console robots.txt
+ * report flagged it explicitly: "Warning - Rule ignored by Googlebot ...
+ * there [are] two robots.txt, one for http and another for https" — this
+ * directive asserts a specific canonical protocol/host that Google's parser
+ * doesn't support, and its presence was enough to make Google treat the
+ * http/https robots.txt as inconsistent. REMOVED — costs nothing (Google
+ * already ignored it for actual rule enforcement) and directly addresses
+ * what Google's own tooling named as the problem.
  */
 const disallow = [
   '/admin',
@@ -66,7 +77,6 @@ export default function robots(): MetadataRoute.Robots {
   const baseUrl = getServerSideURL()
 
   return {
-    host: baseUrl,
     rules: [
       { userAgent: '*', allow: allowMedia, disallow },
       { userAgent: 'Googlebot', allow: allowMedia, disallow },
