@@ -17,6 +17,8 @@ declare global {
   interface Window {
     gtag?: (...args: unknown[]) => void
     dataLayer?: unknown[]
+    /** Google Ads purchase conversion send_to (AW-…/label), set by the gtag loader when configured in Settings → Analytics. */
+    __adsPurchaseSendTo?: string
   }
 }
 
@@ -55,6 +57,11 @@ export const trackBeginCheckout = (items: GaItem[]): void => {
  * refreshed, revisited from an email, or reached twice by an impatient
  * back-button — GA4 deduplicates same-session transaction_ids only, so the
  * cross-session guard lives here in localStorage.
+ *
+ * The same guard also covers the Google Ads purchase conversion (when
+ * Settings → Analytics has the conversion ID + label): Ads deduplicates on
+ * transaction_id too, but only against conversions it has already recorded —
+ * the localStorage guard keeps refreshes from even attempting a resend.
  */
 export const trackPurchaseOnce = (purchase: GaPurchase): void => {
   if (typeof window === 'undefined') return
@@ -67,4 +74,12 @@ export const trackPurchaseOnce = (purchase: GaPurchase): void => {
     // same-session dedupe still applies.
   }
   send('purchase', { ...purchase })
+  if (window.__adsPurchaseSendTo) {
+    send('conversion', {
+      send_to: window.__adsPurchaseSendTo,
+      transaction_id: purchase.transaction_id,
+      value: purchase.value,
+      currency: purchase.currency,
+    })
+  }
 }

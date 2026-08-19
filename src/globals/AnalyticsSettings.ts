@@ -27,7 +27,7 @@ export const AnalyticsSettings: GlobalConfig = {
   admin: {
     group: 'Settings',
     description:
-      'Google Analytics 4 and/or Google Tag Manager. Paste an ID to enable tracking sitewide — leave both empty to run without analytics.',
+      'Google Analytics 4, Google Tag Manager and/or Google Ads conversion tracking. Paste an ID to enable tracking sitewide — leave all empty to run without analytics.',
   },
   hooks: {
     afterChange: [revalidateEverything],
@@ -59,6 +59,34 @@ export const AnalyticsSettings: GlobalConfig = {
         if (!value) return true
         if (typeof value === 'string' && /^GTM-[A-Z0-9]+$/i.test(value.trim())) return true
         return 'A GTM container ID looks like GTM-XXXXXXX (not G-… — that is a GA4 measurement ID, the field above).'
+      },
+    },
+    {
+      name: 'googleAdsId',
+      label: 'Google Ads conversion ID',
+      type: 'text',
+      admin: {
+        description:
+          'Looks like AW-XXXXXXXXXX — from the Google Ads conversion "Install the tag" instructions (the id in gtag(\'config\', …)). Loads the same gtag.js the GA4 field uses; works with or without a GA4 ID. Empty = no Ads tag.',
+      },
+      validate: (value: unknown) => {
+        if (!value) return true
+        if (typeof value === 'string' && /^AW-\d{6,}$/i.test(value.trim())) return true
+        return 'A Google Ads conversion ID looks like AW-XXXXXXXXXX (not G-… — that is the GA4 field above).'
+      },
+    },
+    {
+      name: 'googleAdsPurchaseLabel',
+      label: 'Google Ads purchase conversion label',
+      type: 'text',
+      admin: {
+        description:
+          "The token AFTER the slash in the event snippet's send_to (send_to: 'AW-XXXX/THIS-PART'). With the conversion ID above, fires the purchase conversion on the order confirmation page — real transaction_id (order id, deduplicated), charged value and currency. Requires the conversion ID to be set.",
+      },
+      validate: (value: unknown) => {
+        if (!value) return true
+        if (typeof value === 'string' && /^[A-Za-z0-9_-]{6,}$/.test(value.trim())) return true
+        return "The conversion label is the part after the slash in send_to — letters, digits, - and _ only (don't include the AW-… prefix or the slash)."
       },
     },
     {

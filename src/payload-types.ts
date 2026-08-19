@@ -2720,6 +2720,14 @@ export interface Analytics {
    */
   gtmContainerId?: string | null;
   /**
+   * Looks like AW-XXXXXXXXXX — from the Google Ads conversion "Install the tag" instructions (the id in gtag('config', …)). Loads the same gtag.js the GA4 field uses; works with or without a GA4 ID. Empty = no Ads tag.
+   */
+  googleAdsId?: string | null;
+  /**
+   * The token AFTER the slash in the event snippet's send_to (send_to: 'AW-XXXX/THIS-PART'). With the conversion ID above, fires the purchase conversion on the order confirmation page — real transaction_id (order id, deduplicated), charged value and currency. Requires the conversion ID to be set.
+   */
+  googleAdsPurchaseLabel?: string | null;
+  /**
    * Shows a small consent bar and wires Google Consent Mode v2 for both GA4 and GTM: analytics/ad storage default to GRANTED on load (tracking starts immediately), and a visitor who clicks Decline is pulled down to denied for that visit onward. The banner never renders unless a GA4 or GTM ID is set.
    */
   cookieBannerEnabled?: boolean | null;
@@ -3013,6 +3021,8 @@ export interface StripeSettingsSelect<T extends boolean = true> {
 export interface AnalyticsSelect<T extends boolean = true> {
   gaMeasurementId?: T;
   gtmContainerId?: T;
+  googleAdsId?: T;
+  googleAdsPurchaseLabel?: T;
   cookieBannerEnabled?: T;
   notes?: T;
   updatedAt?: T;

@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { getAnalyticsSettings, validGaId, validGtmId } from '@/lib/analytics/settings'
+import { getAnalyticsSettings, validAwId, validGaId, validGtmId } from '@/lib/analytics/settings'
 
 import { CookieBanner } from './CookieBanner'
 
@@ -11,7 +11,11 @@ import { CookieBanner } from './CookieBanner'
  */
 export const ConsentBanner: React.FC = async () => {
   const settings = await getAnalyticsSettings()
-  const hasTracking = Boolean(validGaId(settings?.gaMeasurementId) || validGtmId(settings?.gtmContainerId))
+  const hasTracking = Boolean(
+    validGaId(settings?.gaMeasurementId) ||
+      validGtmId(settings?.gtmContainerId) ||
+      validAwId(settings?.googleAdsId),
+  )
   const consentManaged = settings?.cookieBannerEnabled !== false
 
   if (!hasTracking || !consentManaged) return null
